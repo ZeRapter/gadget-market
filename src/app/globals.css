@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1E90FF;
+  --color-primary-dark: #1873CC;
+  --color-bg-light: #E0FFFF;
+  --color-bg-dark: #0f172a;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-montserrat), sans-serif;
+}
+
+:root {
+  --background: var(--color-bg-light);
+  --foreground: #1e293b;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.4);
+}
+
+.dark {
+  --background: var(--color-bg-dark);
+  --foreground: #f1f5f9;
+  --glass-bg: rgba(30, 41, 59, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Стекло помещаем в слой, чтобы Tailwind мог его переопределять */
+@layer components {
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+}
+
+/* Неоновое свечение для кнопок */
+.neon-hover {
+  transition: all 0.2s ease-in-out;
+}
+.neon-hover:hover {
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+  transform: translateY(-2px);
+}
+.neon-hover:active {
+  transform: translateY(1px) scale(0.98);
+}
