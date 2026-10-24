@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Пользователи (Клиенты, Продавцы, Админы)
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -15,12 +14,12 @@ model User {
   phone         String?   @unique
   password      String?
   role          Role      @default(CLIENT)
-  status        String    @default("ACTIVE") // ACTIVE, FIRED
+  status        String    @default("ACTIVE") 
   birthDate     DateTime?
-  branch        String?   // Ангарск, Иркутск, Оба
+  branch        String?   
   hireDate      DateTime?
   lastLogin     DateTime?
-  notes         String?   // Внутренние заметки
+  notes         String?   
   
   bookings      Booking[]
   orders        Order[]
@@ -39,43 +38,34 @@ enum Role {
   ADMIN
 }
 
-// 2. Категории (Рекурсивные, для мега-меню)
 model Category {
   id          String     @id @default(cuid())
   name        String
   slug        String     @unique
-  description String?    // Для сносок (например, про Apple)
+  description String?    
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
-  
   products    Product[]
-  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
 
-// 3. Товары
 model Product {
   id              String       @id @default(cuid())
-  sku             String       @unique // Артикул
+  sku             String       @unique 
   name            String
   description     String?
-  priceCash       Int          // Цена за наличные (в копейках)
-  priceCard       Int          // Цена по терминалу (в копейках)
-  condition       String       // Новый, Б/У, Кастомный и т.д.
-  completeness    String?      // Комплектация
-  warranty        String?      // Гарантия
+  priceCash       Int          
+  priceCard       Int          
+  condition       String       
+  completeness    String?      
+  warranty        String?      
   availability    Availability @default(OUT_OF_STOCK)
-  
-  isSpecialOffer  Boolean      @default(false) // Спецпредложение
-  isPreorder      Boolean      @default(false) // Только под заказ (Apple)
-  maxBookingHours Int          @default(24)    // Максимальный срок брони
-  
-  // Характеристики (цвет, память, платформа и т.д.) в формате JSON
+  isSpecialOffer  Boolean      @default(false) 
+  isPreorder      Boolean      @default(false) 
+  maxBookingHours Int          @default(24)    
   specs           Json?        
-  
-  // Медиа (ссылки на Cloud.ru)
   images          String[]     
   videoUrl        String?
   
@@ -83,7 +73,7 @@ model Product {
   category        Category     @relation(fields: [categoryId], references: [id])
   
   favorites       Favorite[]
-  bookings        Booking[]
+  bookingItems    BookingItem[]
   orderItems      OrderItem[]
   reviews         Review[]
   
@@ -99,20 +89,36 @@ enum Availability {
   OUT_OF_STOCK
 }
 
-// 4. Бронирования
 model Booking {
   id            String        @id @default(cuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id])
-  productId     String
-  product       Product       @relation(fields: [productId], references: [id])
-  branch        String        // Филиал, где забирают
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id])
+  branch        String        
   status        BookingStatus @default(PENDING)
   comment       String?
+  cancelReason  String?       
   
-  expiresAt     DateTime      // Когда сгорит бронь
+  // Код выдачи (только для броней/самовывоза)
+  pickupCode    String?       
+  
+  guestName     String?
+  guestPhone    String?
+  guestEmail    String?       
+  contactMethod String?
+  contactValue  String?
+  items         BookingItem[]
+  expiresAt     DateTime      
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model BookingItem {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
 }
 
 enum BookingStatus {
@@ -124,20 +130,24 @@ enum BookingStatus {
   EXPIRED
 }
 
-// 5. Заказы с доставкой
 model Order {
   id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id])
   status        OrderStatus @default(PENDING)
-  
-  deliveryService String    // СДЭК, Почта, Boxberry и т.д.
+  cancelReason  String?     
+  deliveryService String    
   address       String?
   comment       String?
-  contactMethod String      // Телефон, TG, Max
   
+  // Кода выдачи здесь больше нет, так как это доставка в другой город
+  
+  guestName     String?
+  guestPhone    String?
+  guestEmail    String?     
+  contactMethod String?
+  contactValue  String?
   items         OrderItem[]
-  
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -153,55 +163,47 @@ enum OrderStatus {
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
   product   Product @relation(fields: [productId], references: [id])
   price     Int
   quantity  Int     @default(1)
 }
 
-// 6. Заявки на цифровые товары
 model DigitalRequest {
   id            String   @id @default(cuid())
   userId        String?
   user          User?    @relation(fields: [userId], references: [id])
   gameTitle     String
   console       String
-  region        String   // Турция, Украина, США, Индия
-  contactMethod String   // Предпочтительный мессенджер
+  region        String   
+  contactMethod String   
   status        String   @default("NEW")
-  
   createdAt     DateTime @default(now())
 }
 
-// 7. Заявки Trade-in
 model TradeInRequest {
   id            String   @id @default(cuid())
   userId        String?
   user          User?    @relation(fields: [userId], references: [id])
   deviceToTrade String
   condition     String
-  desiredDevice String?  // Что хочет получить взамен
+  desiredDevice String?  
   contactMethod String
   status        String   @default("NEW")
-  
   createdAt     DateTime @default(now())
 }
 
-// 8. Избранное
 model Favorite {
   id        String  @id @default(cuid())
   userId    String
   user      User    @relation(fields: [userId], references: [id])
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  
   createdAt DateTime @default(now())
-  
   @@unique([userId, productId])
 }
 
-// 9. Отзывы
 model Review {
   id        String  @id @default(cuid())
   userId    String
@@ -210,28 +212,23 @@ model Review {
   product   Product @relation(fields: [productId], references: [id])
   rating    Int
   text      String?
-  
   createdAt DateTime @default(now())
 }
 
-// 10. Промокоды
 model PromoCode {
   id          String   @id @default(cuid())
   code        String   @unique
-  discountPct Int?     // Скидка в процентах
-  discountAmt Int?     // Скидка в рублях
+  discountPct Int?     
+  discountAmt Int?     
   isActive    Boolean  @default(true)
   expiresAt   DateTime?
-  
   createdAt   DateTime @default(now())
 }
 
-// 11. Услуги ремонта (Прайс)
 model RepairService {
   id          String   @id @default(cuid())
-  category    String   // Приставка, ПК
-  name        String   // Чистка, Замена термопасты
+  category    String   
+  name        String   
   price       Int
-  
   createdAt   DateTime @default(now())
 }

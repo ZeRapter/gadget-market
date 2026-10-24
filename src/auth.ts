@@ -30,22 +30,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!isValid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        return { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    // Добавляем trigger и session в аргументы
+    async jwt({ token, user, trigger, session }) {
+      // Когда пользователь только зашел
       if (user) {
         token.role = (user as any).role;
         token.id = user.id;
+        token.phone = (user as any).phone;
+        token.name = user.name;
       }
+      
+      // Когда мы вызываем update() из профиля
+      if (trigger === "update" && session) {
+        token.name = session.name;
+        token.phone = session.phone;
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).phone = token.phone;
+        session.user.name = token.name; // Обновляем и имя
       }
       return session;
     },
