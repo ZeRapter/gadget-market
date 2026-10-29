@@ -6,12 +6,12 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import MegaMenu, { Category } from "./MegaMenu";
-import { useCart } from "@/context/CartContext"; // <-- Импорт корзины
+import { useCart } from "@/context/CartContext"; 
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const { data: session, status } = useSession();
-  const { cartCount } = useCart(); // <-- Получаем количество товаров
+  const { cartCount } = useCart(); 
   
   const [mounted, setMounted] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -56,6 +56,7 @@ export default function Header() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
+            {/* ИСПРАВЛЕНО: добавлен dark:text-gray-200 */}
             <button className="flex items-center gap-2 font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
               <Menu size={20} />
               Каталог
@@ -69,11 +70,16 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          {/* ИСПРАВЛЕНО: добавлен dark:text-gray-200 */}
+          <Link href="/trade-in" className="hidden md:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+            Trade-in
+          </Link>
         </div>
 
         <div className="flex-1 max-w-xl relative hidden md:block">
           <input type="text" placeholder="Поиск по названию или артикулу..." className="w-full bg-white/50 dark:bg-black/30 border border-white/40 rounded-xl py-2.5 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm dark:text-white" />
-          <Search className="absolute left-3 top-3 text-gray-500" size={18} />
+          <Search className="absolute left-3 top-3 text-gray-500 dark:text-gray-400" size={18} />
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
@@ -84,7 +90,6 @@ export default function Header() {
             <Heart size={22} />
           </button>
           
-          {/* КНОПКА КОРЗИНЫ С БЕЙДЖЕМ */}
           <Link href="/cart" className="text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors relative" title="Корзина">
             <ShoppingCart size={22} />
             {cartCount > 0 && (
@@ -95,11 +100,11 @@ export default function Header() {
           </Link>
           
           {status === "loading" ? (
-             <div className="w-24 h-10 bg-gray-200 animate-pulse rounded-lg"></div>
+             <div className="w-24 h-10 bg-gray-200 dark:bg-slate-800 animate-pulse rounded-lg"></div>
           ) : session ? (
             <div className="flex items-center gap-3">
               {isAdmin && (
-                <Link href="/admin" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-colors text-sm font-medium shadow-md mr-1">
+                <Link href="/admin" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors text-sm font-medium shadow-md mr-1">
                   <LayoutDashboard size={18} /> Админка
                 </Link>
               )}

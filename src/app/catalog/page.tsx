@@ -21,8 +21,8 @@ async function CatalogData({ searchParamsPromise }: { searchParamsPromise: Promi
   const categoryId = searchParams.category;
   const minPrice = searchParams.minPrice ? Number(searchParams.minPrice) * 100 : undefined;
   const maxPrice = searchParams.maxPrice ? Number(searchParams.maxPrice) * 100 : undefined;
-  const availability = searchParams.availability; // BOTH, ANGARSK, IRKUTSK, ON_ORDER
-  const sort = searchParams.sort || "new"; // new, price_asc, price_desc, name_asc, name_desc, popular
+  const availability = searchParams.availability; 
+  const sort = searchParams.sort || "new"; 
 
   const categories = await prisma.category.findMany();
 
@@ -41,7 +41,6 @@ async function CatalogData({ searchParamsPromise }: { searchParamsPromise: Promi
   }
 
   if (availability) {
-    // Если выбрано "В наличии", ищем те, где статус BOTH, ANGARSK или IRKUTSK
     if (availability === "in_stock") {
       whereCondition.availability = { in: ["BOTH", "ANGARSK", "IRKUTSK"] };
     } else {
@@ -50,15 +49,15 @@ async function CatalogData({ searchParamsPromise }: { searchParamsPromise: Promi
   }
 
   // 2. СОРТИРОВКА (orderBy)
-  let orderByCondition: any = { createdAt: "desc" }; // По умолчанию новые
+  let orderByCondition: any = { createdAt: "desc" }; 
 
   if (sort === "price_asc") orderByCondition = { priceCash: "asc" };
   if (sort === "price_desc") orderByCondition = { priceCash: "desc" };
   if (sort === "name_asc") orderByCondition = { name: "asc" };
   if (sort === "name_desc") orderByCondition = { name: "desc" };
   if (sort === "popular") {
-    // Сортируем по количеству броней (связь с моделью Booking)
-    orderByCondition = { bookings: { _count: "desc" } };
+    // ИСПРАВЛЕНО: bookings заменено на bookingItems
+    orderByCondition = { bookingItems: { _count: "desc" } };
   }
 
   // 3. ЗАПРОС В БАЗУ
@@ -67,7 +66,8 @@ async function CatalogData({ searchParamsPromise }: { searchParamsPromise: Promi
     orderBy: orderByCondition,
     include: {
       _count: {
-        select: { bookings: true } // Подтягиваем количество броней для сортировки по популярности
+        // ИСПРАВЛЕНО: bookings заменено на bookingItems
+        select: { bookingItems: true } 
       }
     }
   });
@@ -88,7 +88,6 @@ async function CatalogData({ searchParamsPromise }: { searchParamsPromise: Promi
         <p className="text-sm text-gray-500 mt-1">Найдено товаров: {products.length}</p>
       </div>
 
-      {/* Передаем товары и категории в клиентский компонент */}
       <CatalogClient initialProducts={products} categories={categories} />
     </div>
   );

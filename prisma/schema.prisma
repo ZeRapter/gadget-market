@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 1. Пользователи (Клиенты, Продавцы, Админы)
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -38,6 +39,7 @@ enum Role {
   ADMIN
 }
 
+// 2. Категории (Рекурсивные)
 model Category {
   id          String     @id @default(cuid())
   name        String
@@ -46,11 +48,14 @@ model Category {
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
+  
   products    Product[]
+  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
 
+// 3. Товары
 model Product {
   id              String       @id @default(cuid())
   sku             String       @unique 
@@ -62,10 +67,13 @@ model Product {
   completeness    String?      
   warranty        String?      
   availability    Availability @default(OUT_OF_STOCK)
+  
   isSpecialOffer  Boolean      @default(false) 
   isPreorder      Boolean      @default(false) 
   maxBookingHours Int          @default(24)    
+  
   specs           Json?        
+  
   images          String[]     
   videoUrl        String?
   
@@ -89,16 +97,18 @@ enum Availability {
   OUT_OF_STOCK
 }
 
+// 4. Бронирования
 model Booking {
   id            String        @id @default(cuid())
+  
   userId        String?
   user          User?         @relation(fields: [userId], references: [id])
+  
   branch        String        
   status        BookingStatus @default(PENDING)
   comment       String?
   cancelReason  String?       
   
-  // Код выдачи (только для броней/самовывоза)
   pickupCode    String?       
   
   guestName     String?
@@ -106,6 +116,7 @@ model Booking {
   guestEmail    String?       
   contactMethod String?
   contactValue  String?
+  
   items         BookingItem[]
   expiresAt     DateTime      
   createdAt     DateTime      @default(now())
@@ -130,6 +141,7 @@ enum BookingStatus {
   EXPIRED
 }
 
+// 5. Заказы с доставкой
 model Order {
   id            String      @id @default(cuid())
   userId        String?
@@ -140,13 +152,12 @@ model Order {
   address       String?
   comment       String?
   
-  // Кода выдачи здесь больше нет, так как это доставка в другой город
-  
   guestName     String?
   guestPhone    String?
   guestEmail    String?     
   contactMethod String?
   contactValue  String?
+  
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -170,6 +181,7 @@ model OrderItem {
   quantity  Int     @default(1)
 }
 
+// 6. Заявки на цифровые товары
 model DigitalRequest {
   id            String   @id @default(cuid())
   userId        String?
@@ -182,18 +194,26 @@ model DigitalRequest {
   createdAt     DateTime @default(now())
 }
 
+// 7. Заявки Trade-in
 model TradeInRequest {
   id            String   @id @default(cuid())
   userId        String?
   user          User?    @relation(fields: [userId], references: [id])
   deviceToTrade String
   condition     String
+  completeness  String?  
   desiredDevice String?  
   contactMethod String
+  contactValue  String?  
+  
+  guestName     String?  // <--- ДОБАВИЛИ ИМЯ
+  guestPhone    String?  // <--- ДОБАВИЛИ ТЕЛЕФОН
+  
   status        String   @default("NEW")
   createdAt     DateTime @default(now())
 }
 
+// 8. Избранное
 model Favorite {
   id        String  @id @default(cuid())
   userId    String
@@ -204,6 +224,7 @@ model Favorite {
   @@unique([userId, productId])
 }
 
+// 9. Отзывы
 model Review {
   id        String  @id @default(cuid())
   userId    String
@@ -215,6 +236,7 @@ model Review {
   createdAt DateTime @default(now())
 }
 
+// 10. Промокоды
 model PromoCode {
   id          String   @id @default(cuid())
   code        String   @unique
@@ -225,6 +247,7 @@ model PromoCode {
   createdAt   DateTime @default(now())
 }
 
+// 11. Услуги ремонта (Прайс)
 model RepairService {
   id          String   @id @default(cuid())
   category    String   

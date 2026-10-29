@@ -43,7 +43,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
     }
   };
 
-  if (initialBookings.length === 0) return <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-12 text-center text-gray-500">Броней пока нет.</div>;
+  if (initialBookings.length === 0) return <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-12 text-center text-gray-500 dark:text-gray-400">Броней пока нет.</div>;
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
@@ -67,10 +67,10 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                   <div className="flex flex-col gap-3">
                     {booking.items.map((item: any) => (
                       <div key={item.id} className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded shrink-0 flex items-center justify-center"><Package size={14} className="text-gray-500" /></div>
+                        <div className="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded shrink-0 flex items-center justify-center"><Package size={14} className="text-gray-500 dark:text-gray-400" /></div>
                         <div>
                           <p className="font-bold text-xs text-gray-900 dark:text-white line-clamp-2">{item.product.name}</p>
-                          <p className="text-[10px] text-gray-500">Арт: {item.product.sku} | {item.quantity} шт.</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">Арт: {item.product.sku} | {item.quantity} шт.</p>
                         </div>
                       </div>
                     ))}
@@ -80,8 +80,8 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                 <td className="p-4">
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-1.5 text-sm font-bold text-gray-900 dark:text-white">
-                      <User size={14} className="text-gray-400" /> {clientName}
-                      {booking.user && <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-gray-500 px-1.5 py-0.5 rounded">Зарег.</span>}
+                      <User size={14} className="text-gray-400 dark:text-gray-500" /> {clientName}
+                      {booking.user && <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">Зарег.</span>}
                     </div>
                     {clientPhone && (
                       <a href={`tel:${clientPhone}`} className="flex items-center gap-1.5 text-sm font-semibold text-green-600 dark:text-green-400 hover:underline">
@@ -89,7 +89,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                       </a>
                     )}
                     {booking.contactMethod && (
-                      <div className="flex items-center gap-1.5 text-xs text-blue-500 font-medium bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md w-max">
+                      <div className="flex items-center gap-1.5 text-xs text-blue-500 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md w-max">
                         {booking.contactMethod === "telegram" && <Send size={12} />}
                         {booking.contactMethod === "vk" && <MessageCircle size={12} />}
                         {booking.contactMethod === "max" && <MessageCircle size={12} />}
@@ -98,14 +98,14 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                         <span className="font-bold">{booking.contactMethod === 'phone' ? 'Звонок' : booking.contactValue || '—'}</span>
                       </div>
                     )}
-                    {booking.comment && <p className="text-xs text-gray-500 italic mt-1 bg-gray-50 dark:bg-slate-800 p-1.5 rounded">«{booking.comment}»</p>}
+                    {booking.comment && <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1 bg-gray-50 dark:bg-slate-800 p-1.5 rounded">«{booking.comment}»</p>}
                   </div>
                 </td>
 
                 <td className="p-4">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{booking.branch === "ANGARSK" ? "Ангарск" : "Иркутск"}</span>
                   <div className="mt-2">{getStatusBadge(booking.status)}</div>
-                  <div className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><Clock size={10} /> до {new Date(booking.expiresAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1"><Clock size={10} /> до {new Date(booking.expiresAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
                   
                   {booking.pickupCode && (
                     <div className="mt-2 text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center gap-1 w-max">
@@ -115,7 +115,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                   )}
 
                   {booking.status === "CANCELLED" && booking.cancelReason && (
-                    <div className="text-[10px] text-red-500 mt-1 max-w-[150px]"><span className="font-bold">Причина:</span> {booking.cancelReason}</div>
+                    <div className="text-[10px] text-red-500 dark:text-red-400 mt-1 max-w-[150px]"><span className="font-bold">Причина:</span> {booking.cancelReason}</div>
                   )}
                 </td>
 
@@ -123,15 +123,15 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
                   <div className="flex items-center justify-end gap-2 flex-wrap">
                     {booking.status === "PENDING" && (
                       <>
-                        <button onClick={() => updateStatus(booking.id, "CONFIRMED")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Подтвердить</button>
-                        <button onClick={() => handleCancel(booking.id)} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><XCircle size={14} /> Отменить</button>
+                        <button onClick={() => updateStatus(booking.id, "CONFIRMED")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Подтвердить</button>
+                        <button onClick={() => handleCancel(booking.id)} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><XCircle size={14} /> Отменить</button>
                       </>
                     )}
                     {booking.status === "CONFIRMED" && (
-                       <button onClick={() => updateStatus(booking.id, "READY")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Готово к выдаче</button>
+                       <button onClick={() => updateStatus(booking.id, "READY")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Готово к выдаче</button>
                     )}
                     {booking.status === "READY" && (
-                       <button onClick={() => updateStatus(booking.id, "COMPLETED")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white hover:bg-green-600 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Выдано (завершить)</button>
+                       <button onClick={() => updateStatus(booking.id, "COMPLETED")} disabled={loadingId === booking.id} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white hover:bg-green-600 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors"><CheckCircle size={14} /> Выдано</button>
                     )}
                   </div>
                 </td>

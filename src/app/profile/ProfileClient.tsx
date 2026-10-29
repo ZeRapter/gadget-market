@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { User, Package, Clock, ChevronRight, CheckCircle2, AlertCircle, Truck } from "lucide-react";
+import { User, Package, Clock, ChevronRight, CheckCircle2, AlertCircle, Truck, ShieldCheck } from "lucide-react";
 
 export default function ProfileClient({ user, initialBookings, initialOrders }: { user: any, initialBookings: any[], initialOrders: any[] }) {
   const router = useRouter();
@@ -65,14 +65,14 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
             </div>
             <div className="overflow-hidden">
               <p className="font-bold dark:text-white truncate">{name || "Пользователь"}</p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
             </div>
           </div>
 
           <nav className="flex flex-col gap-1">
-            <button onClick={() => setActiveTab("bookings")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "bookings" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><Package size={18} /> Мои брони</button>
-            <button onClick={() => setActiveTab("orders")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "orders" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><Truck size={18} /> Мои заказы</button>
-            <button onClick={() => setActiveTab("settings")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "settings" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><User size={18} /> Настройки</button>
+            <button onClick={() => setActiveTab("bookings")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "bookings" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><Package size={18} /> Мои брони</button>
+            <button onClick={() => setActiveTab("orders")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "orders" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><Truck size={18} /> Мои заказы</button>
+            <button onClick={() => setActiveTab("settings")} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${activeTab === "settings" ? "bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800/50"}`}><User size={18} /> Настройки</button>
           </nav>
         </div>
       </aside>
@@ -82,26 +82,25 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
           <div>
             <h1 className="text-2xl font-bold dark:text-white mb-6">Мои бронирования</h1>
             {initialBookings.length === 0 ? (
-              <div className="glass-panel p-12 text-center rounded-2xl"><Package size={48} className="mx-auto text-gray-300 mb-4" /><p className="text-gray-500 mb-6">У вас пока нет активных броней.</p><Link href="/catalog" className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium">В каталог</Link></div>
+              <div className="glass-panel p-12 text-center rounded-2xl"><Package size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" /><p className="text-gray-500 dark:text-gray-400 mb-6">У вас пока нет активных броней.</p><Link href="/catalog" className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium">В каталог</Link></div>
             ) : (
               <div className="flex flex-col gap-4">
                 {initialBookings.map((booking) => (
                   <div key={booking.id} className="glass-panel rounded-2xl p-4 flex flex-col gap-4">
                     {booking.status === "CANCELLED" && booking.cancelReason && (
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 p-3 rounded-xl flex items-start gap-2">
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex items-start gap-2">
                         <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
-                        <div><p className="text-xs font-bold text-red-700">Бронь отменена</p><p className="text-sm text-red-600 mt-1">Причина: {booking.cancelReason}</p></div>
+                        <div><p className="text-xs font-bold text-red-700 dark:text-red-400">Бронь отменена</p><p className="text-sm text-red-600 dark:text-red-300 mt-1">Причина: {booking.cancelReason}</p></div>
                       </div>
                     )}
 
-                    {/* КОД ВЫДАЧИ ДЛЯ БРОНИ */}
                     {["CONFIRMED", "READY"].includes(booking.status) && booking.pickupCode && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/50 p-3 rounded-xl flex items-center justify-between">
+                      <div className="bg-blue-50 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-900/50 p-3 rounded-xl flex items-center justify-between">
                         <div>
                           <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Код получения брони:</p>
-                          <p className="text-[10px] text-blue-500 mt-1">Назовите этот код продавцу при получении.</p>
+                          <p className="text-[10px] text-blue-500 dark:text-blue-400 mt-1">Назовите этот код продавцу при получении.</p>
                         </div>
-                        <p className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-300 tracking-widest bg-white dark:bg-slate-800 px-3 py-1 rounded-lg">
+                        <p className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-300 tracking-widest bg-white dark:bg-slate-900 px-3 py-1 rounded-lg">
                           {booking.pickupCode}
                         </p>
                       </div>
@@ -109,8 +108,8 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
 
                     <div className="flex items-center gap-3 mb-2">
                       {getStatusBadge(booking.status)}
-                      <span className="text-xs text-gray-400 flex items-center gap-1"><Clock size={12} /> {new Date(booking.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded">Филиал: {booking.branch === "ANGARSK" ? "Ангарск" : "Иркутск"}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1"><Clock size={12} /> {new Date(booking.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded">Филиал: {booking.branch === "ANGARSK" ? "Ангарск" : "Иркутск"}</span>
                     </div>
                     
                     <div className="space-y-3">
@@ -122,7 +121,7 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
                             </div>
                             <div>
                               <Link href={`/product/${item.product.id}`} className="text-sm font-bold dark:text-white hover:text-blue-500 line-clamp-1">{item.product.name}</Link>
-                              <p className="text-xs text-gray-500">{item.quantity} шт. × {(item.product.priceCash / 100).toLocaleString('ru-RU')} ₽</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{item.quantity} шт. × {(item.product.priceCash / 100).toLocaleString('ru-RU')} ₽</p>
                             </div>
                           </div>
                           <Link href={`/product/${item.product.id}`} className="text-xs text-blue-500 hover:underline flex items-center gap-1 self-start sm:self-center shrink-0">К товару <ChevronRight size={14} /></Link>
@@ -140,22 +139,22 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
           <div>
             <h1 className="text-2xl font-bold dark:text-white mb-6">Мои заказы</h1>
             {initialOrders.length === 0 ? (
-              <div className="glass-panel p-12 text-center rounded-2xl"><Truck size={48} className="mx-auto text-gray-300 mb-4" /><p className="text-gray-500 mb-6">У вас пока нет заказов с доставкой.</p><Link href="/catalog" className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium">В каталог</Link></div>
+              <div className="glass-panel p-12 text-center rounded-2xl"><Truck size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" /><p className="text-gray-500 dark:text-gray-400 mb-6">У вас пока нет заказов с доставкой.</p><Link href="/catalog" className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium">В каталог</Link></div>
             ) : (
               <div className="flex flex-col gap-4">
                 {initialOrders.map((order) => (
                   <div key={order.id} className="glass-panel rounded-2xl p-4 flex flex-col gap-4">
                     {order.status === "CANCELLED" && order.cancelReason && (
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 p-3 rounded-xl flex items-start gap-2">
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex items-start gap-2">
                         <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
-                        <div><p className="text-xs font-bold text-red-700">Заказ отменен</p><p className="text-sm text-red-600 mt-1">Причина: {order.cancelReason}</p></div>
+                        <div><p className="text-xs font-bold text-red-700 dark:text-red-400">Заказ отменен</p><p className="text-sm text-red-600 dark:text-red-300 mt-1">Причина: {order.cancelReason}</p></div>
                       </div>
                     )}
 
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                       {getStatusBadge(order.status)}
-                      <span className="text-xs text-gray-400 flex items-center gap-1"><Clock size={12} /> {new Date(order.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded flex items-center gap-1"><Truck size={12} /> {order.deliveryService}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1"><Clock size={12} /> {new Date(order.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded flex items-center gap-1"><Truck size={12} /> {order.deliveryService}</span>
                     </div>
                     
                     <div className="space-y-3">
@@ -167,7 +166,7 @@ export default function ProfileClient({ user, initialBookings, initialOrders }: 
                             </div>
                             <div>
                               <Link href={`/product/${item.product.id}`} className="text-sm font-bold dark:text-white hover:text-blue-500 line-clamp-1">{item.product.name}</Link>
-                              <p className="text-xs text-gray-500">{item.quantity} шт. × {(item.price / 100).toLocaleString('ru-RU')} ₽</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{item.quantity} шт. × {(item.price / 100).toLocaleString('ru-RU')} ₽</p>
                             </div>
                           </div>
                           <Link href={`/product/${item.product.id}`} className="text-xs text-blue-500 hover:underline flex items-center gap-1 self-start sm:self-center shrink-0">К товару <ChevronRight size={14} /></Link>

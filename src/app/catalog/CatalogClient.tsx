@@ -11,27 +11,19 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Текущие параметры из URL
   const currentSort = searchParams.get("sort") || "new";
   const currentAvailability = searchParams.get("availability") || "";
   const currentMinPrice = searchParams.get("minPrice") || "";
   const currentMaxPrice = searchParams.get("maxPrice") || "";
 
-  // Локальные стейты для инпутов цены (чтобы не отправлять запрос на каждую цифру)
   const [minPrice, setMinPrice] = useState(currentMinPrice);
   const [maxPrice, setMaxPrice] = useState(currentMaxPrice);
-  
-  // Стейт для переключения вида (сетка/список)
   const [view, setView] = useState<"grid" | "list">("grid");
 
-  // Функция обновления URL
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
+    if (value) params.set(key, value);
+    else params.delete(key);
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
@@ -43,11 +35,9 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
   };
 
   const clearFilters = () => {
-    // Очищаем всё, КРОМЕ категории (чтобы не выкинуть пользователя из раздела)
     const category = searchParams.get("category");
     const params = new URLSearchParams();
     if (category) params.set("category", category);
-    
     setMinPrice("");
     setMaxPrice("");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -55,8 +45,6 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
-      
-      {/* БОКОВАЯ ПАНЕЛЬ ФИЛЬТРОВ */}
       <aside className="w-full lg:w-64 shrink-0">
         <div className="glass-panel rounded-2xl p-6 sticky top-24">
           <div className="flex items-center justify-between mb-6">
@@ -68,7 +56,6 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
             </button>
           </div>
 
-          {/* Фильтр по цене */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold mb-3 dark:text-gray-300">Цена (₽)</h3>
             <div className="flex items-center gap-2 mb-3">
@@ -79,7 +66,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
                 onChange={(e) => setMinPrice(e.target.value)}
                 className="w-full p-2 text-sm rounded-lg border dark:border-slate-700 bg-transparent dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
               />
-              <span className="text-gray-400">—</span>
+              <span className="text-gray-400 dark:text-gray-500">—</span>
               <input 
                 type="number" 
                 placeholder="До" 
@@ -93,7 +80,6 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
             </button>
           </div>
 
-          {/* Фильтр по наличию */}
           <div>
             <h3 className="text-sm font-semibold mb-3 dark:text-gray-300">Наличие</h3>
             <div className="flex flex-col gap-2">
@@ -124,14 +110,10 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
         </div>
       </aside>
 
-      {/* ОСНОВНОЙ КОНТЕНТ */}
       <div className="flex-1">
-        {/* Панель сортировки и вида */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          
-          {/* Сортировка */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-sm text-gray-500 whitespace-nowrap">Сортировка:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Сортировка:</span>
             <select 
               value={currentSort}
               onChange={(e) => updateFilter("sort", e.target.value)}
@@ -146,18 +128,17 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
             </select>
           </div>
 
-          {/* Переключатель вида */}
           <div className="glass-panel p-1 rounded-xl flex gap-1 shrink-0">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 rounded-lg transition-colors ${view === "grid" ? "bg-blue-500 text-white shadow-md" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+              className={`p-2 rounded-lg transition-colors ${view === "grid" ? "bg-blue-500 text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
               title="Сетка"
             >
               <LayoutGrid size={20} />
             </button>
             <button
               onClick={() => setView("list")}
-              className={`p-2 rounded-lg transition-colors ${view === "list" ? "bg-blue-500 text-white shadow-md" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+              className={`p-2 rounded-lg transition-colors ${view === "list" ? "bg-blue-500 text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
               title="Список"
             >
               <List size={20} />
@@ -165,19 +146,17 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
           </div>
         </div>
 
-        {/* Если товаров нет */}
         {initialProducts.length === 0 ? (
           <div className="glass-panel p-12 text-center rounded-2xl flex flex-col items-center">
-            <X size={48} className="text-gray-300 mb-4" />
+            <X size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
             <h2 className="text-xl font-bold dark:text-white mb-2">Ничего не найдено</h2>
-            <p className="text-gray-500 mb-6">Попробуйте изменить параметры фильтрации или сбросить их.</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">Попробуйте изменить параметры фильтрации или сбросить их.</p>
             <button onClick={clearFilters} className="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
               Сбросить фильтры
             </button>
           </div>
         ) : (
           <>
-            {/* СЕТКА (Grid) */}
             {view === "grid" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {initialProducts.map((product) => (
@@ -200,7 +179,6 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
               </div>
             )}
 
-            {/* СПИСОК (List) */}
             {view === "list" && (
               <div className="flex flex-col gap-4">
                 {initialProducts.map((product) => (
@@ -210,16 +188,16 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
                         {product.images?.[0] ? (
                           <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal" />
                         ) : (
-                          <span className="text-xs text-gray-400">Нет фото</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">Нет фото</span>
                         )}
                       </div>
 
                       <div className="flex-1 flex flex-col justify-center">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">{product.name}</h3>
-                        <p className="text-sm text-gray-500 mb-2">Артикул: {product.sku}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Артикул: {product.sku}</p>
                         <div className="flex gap-4">
-                          <span className="text-lg font-bold text-gray-900 dark:text-white">{(product.priceCash / 100).toLocaleString('ru-RU')} ₽ <span className="text-xs font-normal text-gray-500">нал.</span></span>
-                          <span className="text-lg font-bold text-gray-500">{(product.priceCard / 100).toLocaleString('ru-RU')} ₽ <span className="text-xs font-normal">терм.</span></span>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">{(product.priceCash / 100).toLocaleString('ru-RU')} ₽ <span className="text-xs font-normal text-gray-500 dark:text-gray-400">нал.</span></span>
+                          <span className="text-lg font-bold text-gray-500 dark:text-gray-400">{(product.priceCard / 100).toLocaleString('ru-RU')} ₽ <span className="text-xs font-normal">терм.</span></span>
                         </div>
                       </div>
 

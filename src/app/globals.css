@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ВОТ ЭТА СТРОЧКА ВКЛЮЧАЕТ ПОДДЕРЖКУ КЛАССА .dark В TAILWIND 4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #1E90FF;
   --color-primary-dark: #1873CC;
@@ -35,7 +38,6 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
 
-/* Стекло помещаем в слой, чтобы Tailwind мог его переопределять */
 @layer components {
   .glass-panel {
     background: var(--glass-bg);
@@ -45,7 +47,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Неоновое свечение для кнопок */
 .neon-hover {
   transition: all 0.2s ease-in-out;
 }

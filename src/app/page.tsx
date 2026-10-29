@@ -13,7 +13,7 @@ async function ProductList() {
   if (products.length === 0) {
     return (
       <div className="glass-panel p-8 text-center rounded-2xl">
-        <p className="text-gray-500">Товаров пока нет. Добавьте их через админку.</p>
+        <p className="text-gray-500 dark:text-gray-400">Товаров пока нет. Добавьте их через админку.</p>
       </div>
     );
   }
@@ -64,6 +64,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto">
+          {/* ИСПРАВЛЕНО: добавлен dark:text-white */}
           <h3 className="text-2xl font-bold mb-6 ml-2 text-black dark:text-white">Популярные товары</h3>
 
           <Suspense fallback={

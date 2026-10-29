@@ -118,17 +118,17 @@ function CheckoutForm() {
 
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-              Email <span className="text-xs text-gray-400 font-normal">(необязательно)</span>
+              Email <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">(необязательно)</span>
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
+              <Mail className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="you@example.com" />
             </div>
-            <p className="text-[11px] text-gray-500 mt-1">Укажите почту, чтобы получать уведомления о статусе заказа.</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Укажите почту, чтобы получать уведомления о статусе заказа.</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 dark:text-gray-300">Как с вами связаться? {isVkRequired ? <span className="text-red-500">*</span> : "(необязательно)"}</label>
+            <label className="block text-sm font-medium mb-2 dark:text-gray-300">Как с вами связаться? {isVkRequired ? <span className="text-red-500">*</span> : <span className="text-xs text-gray-500 dark:text-gray-400">(необязательно)</span>}</label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {[{ id: "telegram", label: "Telegram" }, { id: "max", label: "Max" }, { id: "vk", label: "ВКонтакте" }, { id: "phone", label: "Звонок" }].map(m => (
                 <button key={m.id} type="button" onClick={() => setContactMethod(m.id)} className={`flex-1 min-w-[80px] py-2 text-xs font-medium rounded-lg border transition-colors ${contactMethod === m.id ? 'bg-blue-500 text-white border-blue-500' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700'}`}>
@@ -140,7 +140,7 @@ function CheckoutForm() {
               <input required={isVkRequired} type="text" value={contactValue} onChange={e => setContactValue(e.target.value)} className={`w-full p-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 ${isVkRequired && !contactValue ? 'border-red-400' : 'dark:border-slate-700'}`} placeholder={contactMethod === "vk" ? "Ссылка на ВК/ID (обязательно)" : "@ваш_никнейм"} />
             )}
             {contactMethod === "phone" && (
-              <p className="text-xs text-gray-500 mt-1">Мы позвоним вам на указанный выше номер.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Мы позвоним вам на указанный выше номер.</p>
             )}
           </div>
         </div>
@@ -190,7 +190,7 @@ function CheckoutForm() {
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200 dark:border-slate-700 pt-4">
             <div>
-              <p className="text-sm text-gray-500">Итого:</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Итого:</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{(totalCash / 100).toLocaleString('ru-RU')} ₽</p>
             </div>
             <button type="submit" disabled={loading || !agreeToData} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-bold text-lg neon-hover shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all">

@@ -21,7 +21,7 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <Link href="/catalog" className="hover:text-blue-500 flex items-center gap-1 transition-colors">
           <ArrowLeft size={16} /> В каталог
         </Link>
@@ -39,7 +39,7 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
               className="w-full h-full object-contain drop-shadow-2xl mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 hover:scale-105 relative z-10" 
             />
           ) : (
-            <span className="text-gray-400 text-xl font-medium relative z-10">Нет фотографии</span>
+            <span className="text-gray-400 dark:text-gray-500 text-xl font-medium relative z-10">Нет фотографии</span>
           )}
         </div>
 
@@ -52,16 +52,17 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
             {product.name}
           </h1>
           
-          <p className="text-sm text-gray-500 mb-6">Артикул: {product.sku}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Артикул: {product.sku}</p>
 
           <div className="glass-panel rounded-2xl p-6 mb-8">
             <div className="flex flex-col gap-2">
+              {/* ИСПРАВЛЕНО: добавлен dark:text-white */}
               <span className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 {(product.priceCash / 100).toLocaleString('ru-RU')} ₽ 
-                <span className="text-base font-normal text-gray-500">наличными</span>
+                <span className="text-base font-normal text-gray-500 dark:text-gray-400">наличными</span>
               </span>
-              <span className="text-xl font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <CreditCard size={20} className="text-gray-400" />
+              <span className="text-xl font-medium text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                <CreditCard size={20} className="text-gray-400 dark:text-gray-500" />
                 {(product.priceCard / 100).toLocaleString('ru-RU')} ₽ 
                 <span className="text-sm font-normal">по терминалу</span>
               </span>
@@ -83,7 +84,6 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
             </span>
           </div>
 
-          {/* БЛОК С ТРЕМЯ КНОПКАМИ */}
           <ProductActions product={product} />
 
           {product.description && (
@@ -99,14 +99,14 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
             <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
               <ShieldCheck className="text-blue-500" size={24} />
               <div>
-                <p className="text-xs text-gray-500">Состояние</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Состояние</p>
                 <p className="font-medium text-sm dark:text-white">{product.condition}</p>
               </div>
             </div>
             <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
               <Box className="text-blue-500" size={24} />
               <div>
-                <p className="text-xs text-gray-500">Бронь до</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Бронь до</p>
                 <p className="font-medium text-sm dark:text-white">{product.maxBookingHours} часов</p>
               </div>
             </div>
@@ -127,7 +127,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       <div className="relative z-10">
         <Header />
         <div className="mt-8">
-          <Suspense fallback={<div className="text-center text-gray-500 py-20">Загрузка товара...</div>}>
+          <Suspense fallback={<div className="text-center text-gray-500 dark:text-gray-400 py-20">Загрузка товара...</div>}>
             <ProductDetails paramsPromise={params} />
           </Suspense>
         </div>
