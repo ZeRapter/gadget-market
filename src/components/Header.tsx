@@ -51,12 +51,12 @@ export default function Header() {
             <img src="/logo.png" alt="Gadget Market" className="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-blue-400 transition-colors" />
           </Link>
 
+          {/* 1. КАТАЛОГ */}
           <div 
             className="relative"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            {/* ИСПРАВЛЕНО: добавлен dark:text-gray-200 */}
             <button className="flex items-center gap-2 font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
               <Menu size={20} />
               Каталог
@@ -64,6 +64,7 @@ export default function Header() {
 
             {isMenuOpen && categories.length > 0 && (
               <div className="absolute top-full left-0 pt-2 z-50">
+                {/* Убрали overflow-y-auto отсюда */}
                 <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700 shadow-2xl rounded-2xl">
                   <MegaMenu categories={categories} />
                 </div>
@@ -71,9 +72,29 @@ export default function Header() {
             )}
           </div>
 
-          {/* ИСПРАВЛЕНО: добавлен dark:text-gray-200 */}
-          <Link href="/trade-in" className="hidden md:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+          {/* 2. ПОДПИСКИ */}
+          <Link href="/digital" className="hidden lg:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+            Подписки/Цифровые игры
+          </Link>
+
+          {/* 3. TRADE-IN */}
+          <Link href="/trade-in" className="hidden lg:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
             Trade-in
+          </Link>
+
+          {/* 4. РЕМОНТ */}
+          <Link href="/repair" className="hidden lg:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+            Ремонт
+          </Link>
+
+          {/* 5. ЗАКАЗАТЬ ТОВАР */}
+          <Link href="/custom-request" className="hidden xl:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+            Заказать товар
+          </Link>
+
+          {/* 6. О НАС */}
+          <Link href="/about" className="hidden xl:block font-bold text-gray-700 dark:text-gray-200 hover:text-blue-500 transition-colors py-2">
+            О нас
           </Link>
         </div>
 
@@ -104,7 +125,7 @@ export default function Header() {
           ) : session ? (
             <div className="flex items-center gap-3">
               {isAdmin && (
-                <Link href="/admin" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors text-sm font-medium shadow-md mr-1">
+                <Link href="/admin" className="hidden xl:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors text-sm font-medium shadow-md mr-1">
                   <LayoutDashboard size={18} /> Админка
                 </Link>
               )}

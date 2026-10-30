@@ -6,8 +6,6 @@ import { CheckCircle2, User, Phone, Package, HelpCircle, Box } from "lucide-reac
 
 export default function TradeInForm() {
   const { data: session } = useSession();
-  
-  // Достаем данные из сессии
   const userPhone = (session?.user as any)?.phone;
   const userName = session?.user?.name;
 
@@ -20,11 +18,12 @@ export default function TradeInForm() {
   const [contactValue, setContactValue] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   
-  // Имя и телефон теперь всегда в стейтах
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
 
-  // Подтягиваем данные из профиля при загрузке
+  // НОВЫЙ СТЕЙТ ДЛЯ ГАЛОЧКИ
+  const [agreeToData, setAgreeToData] = useState(false);
+
   useEffect(() => {
     if (userName) setGuestName(userName);
     if (userPhone) setGuestPhone(userPhone);
@@ -34,11 +33,15 @@ export default function TradeInForm() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  const isVkRequired = contactMethod === "vk";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeToData) return; // Защита
+    
     setError("");
 
-    if (contactMethod === "vk" && !contactValue.trim()) {
+    if (isVkRequired && !contactValue.trim()) {
       setError("Для связи во ВКонтакте обязательно укажите ссылку на профиль или ID");
       return;
     }
@@ -65,8 +68,8 @@ export default function TradeInForm() {
           contactMethod,
           contactValue,
           contactPhone,
-          guestName, // Отправляем всегда
-          guestPhone, // Отправляем всегда
+          guestName,
+          guestPhone,
         }),
       });
 
@@ -98,21 +101,20 @@ export default function TradeInForm() {
 
   return (
     <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6">
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded-xl">{error}</div>}
+      {error && <div className="bg-red-100 text-red-700 p-4 rounded-xl dark:bg-red-900/30 dark:text-red-400">{error}</div>}
 
-      {/* ИМЯ И ТЕЛЕФОН ВСЕГДА СВЕРХУ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4 border-b border-gray-200 dark:border-slate-700">
         <div>
           <label className="block text-sm font-medium mb-2 dark:text-gray-300">Ваше имя *</label>
           <div className="relative">
-            <User className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <User className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
             <input required type="text" value={guestName} onChange={e => setGuestName(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Иван" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium mb-2 dark:text-gray-300">Телефон *</label>
           <div className="relative">
-            <Phone className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <Phone className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
             <input required type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="+7 (999) 000-00-00" />
           </div>
         </div>
@@ -122,7 +124,7 @@ export default function TradeInForm() {
         <div>
           <label className="block text-sm font-medium mb-2 dark:text-gray-300">Что сдаете? *</label>
           <div className="relative">
-            <Package className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <Package className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
             <input required type="text" value={deviceToTrade} onChange={e => setDeviceToTrade(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Например: PlayStation 4 Slim" />
           </div>
         </div>
@@ -141,7 +143,7 @@ export default function TradeInForm() {
       <div>
         <label className="block text-sm font-medium mb-2 dark:text-gray-300">Комплектность</label>
         <div className="relative">
-          <Box className="absolute left-3 top-3.5 text-gray-400" size={18} />
+          <Box className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
           <input type="text" value={completeness} onChange={e => setCompleteness(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Например: Коробка, джойстик, провода" />
         </div>
       </div>
@@ -149,13 +151,15 @@ export default function TradeInForm() {
       <div>
         <label className="block text-sm font-medium mb-2 dark:text-gray-300">Что хотите получить взамен? (необязательно)</label>
         <div className="relative">
-          <HelpCircle className="absolute left-3 top-3.5 text-gray-400" size={18} />
+          <HelpCircle className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
           <input type="text" value={desiredDevice} onChange={e => setDesiredDevice(e.target.value)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Например: PlayStation 5" />
         </div>
       </div>
 
       <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
-        <label className="block text-sm font-medium mb-2 dark:text-gray-300">Как с вами связаться? *</label>
+        <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+          Как с вами связаться? {isVkRequired ? <span className="text-red-500">*</span> : "(необязательно)"}
+        </label>
         <div className="flex gap-2 mb-4 flex-wrap">
           {[
             { id: "telegram", label: "Telegram" },
@@ -172,26 +176,49 @@ export default function TradeInForm() {
           <div className="space-y-3">
             <input type="text" value={contactValue} onChange={e => setContactValue(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="@никнейм" />
             <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="+7 (999) 000-00-00" />
-            <p className="text-xs text-gray-500">* Заполните никнейм или телефон (можно оба)</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">* Заполните никнейм или телефон (можно оба)</p>
           </div>
         )}
 
         {contactMethod === "max" && (
           <div className="space-y-3">
             <input required type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="+7 (999) 000-00-00" />
-            <p className="text-xs text-gray-500">* Укажите номер телефона, привязанный к вашему аккаунту Max</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">* Укажите номер телефона, привязанный к вашему аккаунту Max</p>
           </div>
         )}
 
         {contactMethod === "vk" && (
           <div className="space-y-3">
             <input required type="text" value={contactValue} onChange={e => setContactValue(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ссылка на профиль ВК или ID" />
-            <p className="text-xs text-gray-500">* Обязательно для связи через ВКонтакте</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">* Обязательно для связи через ВКонтакте</p>
           </div>
         )}
       </div>
 
-      <button type="submit" disabled={loading} className="w-full py-4 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-bold text-lg neon-hover shadow-lg disabled:opacity-50">
+      {/* ГАЛОЧКА ПОДТВЕРЖДЕНИЯ ДАННЫХ */}
+      <label className="flex items-start gap-3 cursor-pointer group pt-2">
+        <div className="relative flex items-center mt-0.5 shrink-0">
+          <input 
+            type="checkbox" 
+            required
+            checked={agreeToData}
+            onChange={(e) => setAgreeToData(e.target.checked)}
+            className="peer w-5 h-5 border-2 border-gray-300 dark:border-slate-600 rounded bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-colors cursor-pointer appearance-none"
+          />
+          <svg className="absolute w-5 h-5 pointer-events-none hidden peer-checked:block text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors select-none">
+          Я подтверждаю, что <strong>контактные данные</strong> (имя, телефон, мессенджер) указаны верно.
+        </span>
+      </label>
+
+      <button 
+        type="submit" 
+        disabled={loading || !agreeToData} 
+        className="w-full py-4 mt-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-bold text-lg neon-hover shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
         {loading ? "Отправка..." : "Отправить заявку на оценку"}
       </button>
     </form>

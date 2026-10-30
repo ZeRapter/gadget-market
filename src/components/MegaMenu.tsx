@@ -12,12 +12,26 @@ export type Category = {
 
 function MenuItem({ cat, allCategories }: { cat: Category, allCategories: Category[] }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const itemRef = useRef<HTMLDivElement>(null);
   
   const children = allCategories.filter(c => c.parentId === cat.id);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    
+    // УМНАЯ ЛОГИКА: Проверяем, хватает ли места снизу для меню
+    if (itemRef.current) {
+      const rect = itemRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      
+      if (spaceBelow < 300) { // Если места мало, открываем вверх
+        setOpenUp(true);
+      } else {
+        setOpenUp(false);
+      }
+    }
     setIsHovered(true);
   };
 
@@ -29,6 +43,7 @@ function MenuItem({ cat, allCategories }: { cat: Category, allCategories: Catego
 
   return (
     <div 
+      ref={itemRef}
       className="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -46,8 +61,8 @@ function MenuItem({ cat, allCategories }: { cat: Category, allCategories: Catego
       </Link>
 
       {children.length > 0 && isHovered && (
-        // left-full ставит блок вплотную к правому краю, pl-2 создает невидимый мост
-        <div className="absolute top-0 left-full pl-2 z-[60]">
+        <div className={`absolute left-full pl-2 z-[100] ${openUp ? 'bottom-0' : 'top-0'}`}>
+          {/* Убрали overflow-y-auto и max-h, чтобы не обрезались следующие уровни */}
           <div className="w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-gray-200 dark:border-slate-700 shadow-xl rounded-xl p-2 flex flex-col gap-1">
             {children.map(child => (
               <MenuItem key={child.id} cat={child} allCategories={allCategories} />
@@ -63,7 +78,7 @@ export default function MegaMenu({ categories }: { categories: Category[] }) {
   const rootCategories = categories.filter(c => c.parentId === null);
 
   return (
-    <div className="w-64 p-2">
+    <div className="w-64 p-2 relative z-50">
       {rootCategories.map(cat => (
         <MenuItem key={cat.id} cat={cat} allCategories={categories} />
       ))}

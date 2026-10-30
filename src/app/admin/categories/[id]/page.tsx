@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Plus, Folder, ChevronRight, Package, Edit } from "lucide-react";
 import { notFound } from "next/navigation";
 import DeleteProductButton from "../../products/DeleteProductButton";
+import SubCategoriesClient from "./SubCategoriesClient";
 
 async function CategoryDetails({ paramsPromise }: { paramsPromise: Promise<{ id: string }> }) {
   const { id } = await paramsPromise;
@@ -23,7 +24,8 @@ async function CategoryDetails({ paramsPromise }: { paramsPromise: Promise<{ id:
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+      {/* Хлебные крошки */}
+      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <Link href="/admin/categories" className="hover:text-blue-500 transition-colors">Все категории</Link>
         <ChevronRight size={14} />
         {category.parent && (
@@ -35,6 +37,7 @@ async function CategoryDetails({ paramsPromise }: { paramsPromise: Promise<{ id:
         <span className="text-gray-900 dark:text-white font-medium">{category.name}</span>
       </div>
 
+      {/* Заголовок и кнопки */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -60,37 +63,21 @@ async function CategoryDetails({ paramsPromise }: { paramsPromise: Promise<{ id:
         </div>
       </div>
 
+      {/* БЛОК 1: Компактные подгруппы (теперь с редактированием) */}
       <div className="mb-8">
         <h2 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Подгруппы ({category.children.length})</h2>
         
-        {category.children.length === 0 ? (
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 text-gray-500 text-sm">
-            В этой категории пока нет подгрупп.
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {category.children.map(child => (
-              <Link 
-                key={child.id} 
-                href={`/admin/categories/${child.id}`}
-                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 px-3 py-1.5 rounded-lg hover:border-blue-500 hover:shadow-sm transition-all group flex items-center gap-2"
-              >
-                <Folder size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                <span className="font-medium text-gray-700 dark:text-gray-300 text-sm group-hover:text-blue-500 transition-colors">{child.name}</span>
-                <ChevronRight size={14} className="text-gray-300 group-hover:text-blue-500 transition-colors ml-1" />
-              </Link>
-            ))}
-          </div>
-        )}
+        <SubCategoriesClient initialCategories={category.children} />
       </div>
 
+      {/* БЛОК 2: Товары в этой категории */}
       <div>
         <h2 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Товары в категории ({category.products.length})</h2>
         
         {category.products.length === 0 ? (
           <div className="p-8 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 text-center">
-             <Package className="mx-auto text-gray-300 mb-3" size={32} />
-             <p className="text-gray-500 text-sm">Здесь пока нет товаров. Нажмите «Добавить товар».</p>
+             <Package className="mx-auto text-gray-300 dark:text-gray-600 mb-3" size={32} />
+             <p className="text-gray-500 dark:text-gray-400 text-sm">Здесь пока нет товаров. Нажмите «Добавить товар».</p>
           </div>
         ) : (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
@@ -154,7 +141,7 @@ async function CategoryDetails({ paramsPromise }: { paramsPromise: Promise<{ id:
 export default function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div>
-      <Suspense fallback={<div className="p-8 text-center text-gray-500">Загрузка категории...</div>}>
+      <Suspense fallback={<div className="p-8 text-center text-gray-500 dark:text-gray-400">Загрузка категории...</div>}>
         <CategoryDetails paramsPromise={params} />
       </Suspense>
     </div>

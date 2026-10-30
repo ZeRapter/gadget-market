@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Пользователи (Клиенты, Продавцы, Админы)
+// 1. Пользователи
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -28,6 +28,7 @@ model User {
   favorites     Favorite[]
   digitalReqs   DigitalRequest[]
   tradeInReqs   TradeInRequest[]
+  customReqs    CustomRequest[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -39,7 +40,7 @@ enum Role {
   ADMIN
 }
 
-// 2. Категории (Рекурсивные)
+// 2. Категории
 model Category {
   id          String     @id @default(cuid())
   name        String
@@ -48,9 +49,7 @@ model Category {
   parentId    String?
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
-  
   products    Product[]
-  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -67,13 +66,10 @@ model Product {
   completeness    String?      
   warranty        String?      
   availability    Availability @default(OUT_OF_STOCK)
-  
   isSpecialOffer  Boolean      @default(false) 
   isPreorder      Boolean      @default(false) 
   maxBookingHours Int          @default(24)    
-  
   specs           Json?        
-  
   images          String[]     
   videoUrl        String?
   
@@ -100,23 +96,18 @@ enum Availability {
 // 4. Бронирования
 model Booking {
   id            String        @id @default(cuid())
-  
   userId        String?
   user          User?         @relation(fields: [userId], references: [id])
-  
   branch        String        
   status        BookingStatus @default(PENDING)
   comment       String?
   cancelReason  String?       
-  
   pickupCode    String?       
-  
   guestName     String?
   guestPhone    String?
   guestEmail    String?       
   contactMethod String?
   contactValue  String?
-  
   items         BookingItem[]
   expiresAt     DateTime      
   createdAt     DateTime      @default(now())
@@ -141,7 +132,7 @@ enum BookingStatus {
   EXPIRED
 }
 
-// 5. Заказы с доставкой
+// 5. Заказы
 model Order {
   id            String      @id @default(cuid())
   userId        String?
@@ -151,13 +142,12 @@ model Order {
   deliveryService String    
   address       String?
   comment       String?
-  
+  pickupCode    String?     
   guestName     String?
   guestPhone    String?
   guestEmail    String?     
   contactMethod String?
   contactValue  String?
-  
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -181,7 +171,7 @@ model OrderItem {
   quantity  Int     @default(1)
 }
 
-// 6. Заявки на цифровые товары
+// 6. Цифровые товары
 model DigitalRequest {
   id            String   @id @default(cuid())
   userId        String?
@@ -189,12 +179,16 @@ model DigitalRequest {
   gameTitle     String
   console       String
   region        String   
-  contactMethod String   
+  accountStatus String?  
+  contactMethod String
+  contactValue  String?  
+  guestName     String?
+  guestPhone    String?
   status        String   @default("NEW")
   createdAt     DateTime @default(now())
 }
 
-// 7. Заявки Trade-in
+// 7. Trade-in
 model TradeInRequest {
   id            String   @id @default(cuid())
   userId        String?
@@ -205,15 +199,29 @@ model TradeInRequest {
   desiredDevice String?  
   contactMethod String
   contactValue  String?  
-  
-  guestName     String?  // <--- ДОБАВИЛИ ИМЯ
-  guestPhone    String?  // <--- ДОБАВИЛИ ТЕЛЕФОН
-  
+  guestName     String?
+  guestPhone    String?
   status        String   @default("NEW")
   createdAt     DateTime @default(now())
 }
 
-// 8. Избранное
+// 8. Кастомные заказы
+model CustomRequest {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  productName   String   
+  productLink   String?  
+  comment       String?  
+  guestName     String?
+  guestPhone    String?
+  contactMethod String
+  contactValue  String?
+  status        String   @default("NEW") 
+  createdAt     DateTime @default(now())
+}
+
+// 9. Избранное
 model Favorite {
   id        String  @id @default(cuid())
   userId    String
@@ -224,7 +232,7 @@ model Favorite {
   @@unique([userId, productId])
 }
 
-// 9. Отзывы
+// 10. Отзывы
 model Review {
   id        String  @id @default(cuid())
   userId    String
@@ -236,7 +244,7 @@ model Review {
   createdAt DateTime @default(now())
 }
 
-// 10. Промокоды
+// 11. Промокоды
 model PromoCode {
   id          String   @id @default(cuid())
   code        String   @unique
@@ -247,11 +255,27 @@ model PromoCode {
   createdAt   DateTime @default(now())
 }
 
-// 11. Услуги ремонта (Прайс)
+// 12. Услуги ремонта
 model RepairService {
   id          String   @id @default(cuid())
   category    String   
   name        String   
+  deviceModel String?  
   price       Int
+  isFromPrice Boolean  @default(false)
+  priceUnit   String?  
+  sortOrder   Int      @default(0) // <--- НОВОЕ ПОЛЕ ДЛЯ СОРТИРОВКИ
   createdAt   DateTime @default(now())
+}
+
+// 13. Подписки
+model SubscriptionPlan {
+  id          String @id @default(cuid())
+  platform    String 
+  region      String 
+  tier        String 
+  duration    String 
+  accountType String? 
+  price       Int
+  sortOrder   Int    @default(0)
 }

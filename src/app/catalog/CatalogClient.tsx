@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
-import { LayoutGrid, List, ShoppingCart, SlidersHorizontal, X } from "lucide-react";
+import { LayoutGrid, List, ShoppingCart, SlidersHorizontal, X, Search, MessageSquare } from "lucide-react";
 import Link from "next/link";
 
 export default function CatalogClient({ initialProducts }: { initialProducts: any[], categories: any[] }) {
@@ -150,8 +150,8 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
           <div className="glass-panel p-12 text-center rounded-2xl flex flex-col items-center">
             <X size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
             <h2 className="text-xl font-bold dark:text-white mb-2">Ничего не найдено</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">Попробуйте изменить параметры фильтрации или сбросить их.</p>
-            <button onClick={clearFilters} className="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
+            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">Попробуйте изменить параметры фильтрации или сбросить их.</p>
+            <button onClick={clearFilters} className="px-6 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors font-medium">
               Сбросить фильтры
             </button>
           </div>
@@ -220,6 +220,18 @@ export default function CatalogClient({ initialProducts }: { initialProducts: an
             )}
           </>
         )}
+
+        {/* ВСЕГДА ВИДИМАЯ КНОПКА "ЗАКАЗАТЬ ТОВАР" ВНИЗУ КАТАЛОГА */}
+        <div className="mt-12 glass-panel p-8 rounded-3xl text-center border-2 border-dashed border-gray-300 dark:border-slate-700 bg-white/40 dark:bg-slate-900/40">
+          <h2 className="text-2xl font-bold dark:text-white mb-3">Не нашли нужный товар?</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-xl mx-auto">
+            Мы можем найти для вас любую игру, аксессуар или коллекционную фигурку, даже если их нет в нашем каталоге. Оставьте заявку!
+          </p>
+          <Link href="/custom-request" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-bold text-lg neon-hover shadow-lg">
+            <MessageSquare size={22} /> Заказать товар
+          </Link>
+        </div>
+
       </div>
     </div>
   );
