@@ -234,13 +234,14 @@ model Favorite {
 
 // 10. Отзывы
 model Review {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   productId String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
   rating    Int
   text      String?
+  images    String[] // <--- ДОБАВЛЕНО ПОЛЕ ДЛЯ ФОТОГРАФИЙ
   createdAt DateTime @default(now())
 }
 
@@ -264,7 +265,7 @@ model RepairService {
   price       Int
   isFromPrice Boolean  @default(false)
   priceUnit   String?  
-  sortOrder   Int      @default(0) // <--- НОВОЕ ПОЛЕ ДЛЯ СОРТИРОВКИ
+  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
 }
 

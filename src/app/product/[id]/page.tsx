@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProductActions from "@/components/ProductActions";
+import ReviewsSection from "@/components/ReviewsSection"; // <-- ДОБАВЛЕН ИМПОРТ
 import { ArrowLeft, ShieldCheck, Box, CreditCard } from "lucide-react";
 
 async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: string }> }) {
@@ -56,7 +57,6 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
 
           <div className="glass-panel rounded-2xl p-6 mb-8">
             <div className="flex flex-col gap-2">
-              {/* ИСПРАВЛЕНО: добавлен dark:text-white */}
               <span className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 {(product.priceCash / 100).toLocaleString('ru-RU')} ₽ 
                 <span className="text-base font-normal text-gray-500 dark:text-gray-400">наличными</span>
@@ -114,6 +114,10 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
 
         </div>
       </div>
+
+      {/* БЛОК ОТЗЫВОВ (ДОБАВЛЕН В САМЫЙ НИЗ) */}
+      <ReviewsSection productId={product.id} />
+
     </div>
   );
 }

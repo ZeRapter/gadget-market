@@ -5,36 +5,34 @@ import Link from "next/link";
 import { 
   LayoutDashboard, 
   Package, 
-  ShoppingCart, 
-  Users, 
-  ArrowLeft, 
   FolderTree, 
+  Tag, 
   ClipboardList, 
+  ShoppingCart, 
   RefreshCw, 
-  Gamepad2,
-  Tag,
-  Search,
-  Wrench // <--- ДОБАВИЛИ ИКОНКУ ГАЕЧНОГО КЛЮЧА
+  Gamepad2, 
+  MonitorSmartphone, 
+  Wrench, 
+  Users, 
+  ArrowLeft,
+  Search 
 } from "lucide-react";
 
 async function AdminAuth({ children }: { children: React.ReactNode }) {
   const session = await auth();
-
-  if (!session || (session.user as any)?.role !== "ADMIN" && (session.user as any)?.role !== "SELLER") {
+  if (!session || ((session.user as any)?.role !== "ADMIN" && (session.user as any)?.role !== "SELLER")) {
     redirect("/");
   }
-
   return <>{children}</>;
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-[#0f172a] flex">
-      {/* Боковое меню */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 p-6 flex flex-col gap-2 overflow-y-auto">
+      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 p-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-blue-500">АДМИНКА</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Gadget Market</p>
+          <p className="text-xs text-gray-500">Gadget Market</p>
         </div>
 
         <Link href="/admin" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
@@ -46,6 +44,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin/categories" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <FolderTree size={20} /> Категории
         </Link>
+        <Link href="/admin/promocodes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
+          <Tag size={20} /> Промокоды
+        </Link>
+
+        <div className="my-2 border-t border-gray-200 dark:border-slate-800"></div>
+
         <Link href="/admin/bookings" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <ClipboardList size={20} /> Бронирования
         </Link>
@@ -58,40 +62,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin/digital" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Gamepad2 size={20} /> Цифровые товары
         </Link>
+        
         <Link href="/admin/digital/plans" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
-          <Tag size={20} /> Цены на подписки
+          <MonitorSmartphone size={20} /> Цены подписок
         </Link>
 
-        {/* НОВАЯ ССЫЛКА НА ПРАЙС РЕМОНТА */}
         <Link href="/admin/repair" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Wrench size={20} /> Прайс на ремонт
         </Link>
-        
+
+        {/* ИСПРАВЛЕНО: правильный путь и правильное название */}
         <Link href="/admin/custom-requests" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Search size={20} /> Заказы товаров
         </Link>
+
+        <div className="my-2 border-t border-gray-200 dark:border-slate-800"></div>
 
         <Link href="/admin/users" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Users size={20} /> Сотрудники
         </Link>
 
         <div className="mt-auto border-t border-gray-200 dark:border-slate-800 pt-4">
-          <Link href="/" className="flex items-center gap-3 p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors">
+          <Link href="/" className="flex items-center gap-3 p-3 rounded-xl text-gray-500 hover:text-blue-500 transition-colors">
             <ArrowLeft size={20} /> На сайт
           </Link>
         </div>
       </aside>
 
-      {/* Контентная часть */}
-      <main className="flex-1 p-8 overflow-y-auto h-screen">
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-            Проверка доступа...
-          </div>
-        }>
-          <AdminAuth>
-            {children}
-          </AdminAuth>
+      <main className="flex-1 p-8">
+        <Suspense fallback={<div className="flex items-center justify-center h-64 text-gray-500">Проверка доступа...</div>}>
+          <AdminAuth>{children}</AdminAuth>
         </Suspense>
       </main>
     </div>

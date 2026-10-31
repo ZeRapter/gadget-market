@@ -21,8 +21,8 @@ export default function CatalogClient({ initialProducts, categories }: { initial
   const [maxPrice, setMaxPrice] = useState(currentMaxPrice);
   const [view, setView] = useState<"grid" | "list">("grid");
   
-  // НОВЫЙ СТЕЙТ ДЛЯ КОЛИЧЕСТВА КОЛОНОК
-  const [gridCols, setGridCols] = useState<2 | 3 | 4>(2);
+  // ИЗМЕНЕНО: убрали 4, оставили только 2 и 3
+  const [gridCols, setGridCols] = useState<2 | 3>(2);
   
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -51,10 +51,9 @@ export default function CatalogClient({ initialProducts, categories }: { initial
     setIsMobileFiltersOpen(false);
   };
 
-  // ФУНКЦИЯ ДЛЯ ОПРЕДЕЛЕНИЯ КЛАССОВ СЕТКИ
+  // ИЗМЕНЕНО: удалили условие для 4 колонок
   const getGridClass = () => {
     if (gridCols === 3) return "grid-cols-3 md:grid-cols-3 xl:grid-cols-4";
-    if (gridCols === 4) return "grid-cols-4 md:grid-cols-4 xl:grid-cols-5";
     return "grid-cols-2 md:grid-cols-2 xl:grid-cols-3";
   };
 
@@ -163,13 +162,13 @@ export default function CatalogClient({ initialProducts, categories }: { initial
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* ПЕРЕКЛЮЧАТЕЛЬ КОЛИЧЕСТВА КОЛОНОК (ПОЯВЛЯЕТСЯ ТОЛЬКО В РЕЖИМЕ СЕТКИ) */}
+            {/* ИЗМЕНЕНО: массив теперь [2, 3] вместо [2, 3, 4] */}
             {view === "grid" && (
               <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
-                {[2, 3, 4].map((num) => (
+                {[2, 3].map((num) => (
                   <button
                     key={num}
-                    onClick={() => setGridCols(num as 2 | 3 | 4)}
+                    onClick={() => setGridCols(num as 2 | 3)}
                     className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
                       gridCols === num
                         ? "bg-white dark:bg-slate-700 text-blue-500 shadow-sm"
@@ -204,7 +203,6 @@ export default function CatalogClient({ initialProducts, categories }: { initial
         ) : (
           <>
             {view === "grid" && (
-              // ПРИМЕНЯЕМ ДИНАМИЧЕСКИЙ КЛАСС СЕТКИ
               <div className={`grid ${getGridClass()} gap-3 sm:gap-6`}>
                 {initialProducts.map((product) => (
                   <ProductCard key={product.id} id={product.id} title={product.name} priceCash={product.priceCash} priceCard={product.priceCard} imageUrl={product.images?.[0]} availability={product.availability === "BOTH" ? "В наличии" : product.availability === "ANGARSK" ? "В Ангарске" : product.availability === "IRKUTSK" ? "В Иркутске" : product.availability === "ON_ORDER" ? "Под заказ" : "Нет в наличии"} />

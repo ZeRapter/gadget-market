@@ -3,6 +3,7 @@ import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CartProvider } from "@/context/CartContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" });
@@ -23,12 +24,12 @@ export default function RootLayout({
       <body className={`${inter.variable} ${montserrat.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <CartProvider>
-            {/* Добавили pb-20 (отступ снизу), чтобы нижнее меню не перекрывало контент */}
-            <div className="pb-20 md:pb-0">
-              {children}
-            </div>
-            {/* Само нижнее меню */}
-            <MobileBottomNav />
+            <FavoritesProvider>
+              <div className="pb-20 md:pb-0">
+                {children}
+              </div>
+              <MobileBottomNav />
+            </FavoritesProvider>
           </CartProvider>
         </ThemeProvider>
       </body>

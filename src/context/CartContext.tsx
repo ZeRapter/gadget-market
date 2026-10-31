@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-// Тип товара в корзине
 export type CartItem = {
   id: string;
   name: string;
@@ -16,6 +15,7 @@ type CartContextType = {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void; // <-- НОВАЯ ФУНКЦИЯ
   clearCart: () => void;
   cartCount: number;
 };
@@ -26,7 +26,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Загружаем корзину из localStorage при запуске
   useEffect(() => {
     const savedCart = localStorage.getItem("gadget-market-cart");
     if (savedCart) {
@@ -39,7 +38,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  // Сохраняем корзину в localStorage при каждом изменении
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem("gadget-market-cart", JSON.stringify(cart));
@@ -50,14 +48,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === newItem.id);
       if (existingItem) {
-        // Если товар уже есть, увеличиваем количество
         return prevCart.map((item) =>
-          item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === newItem.id ? { ...item, quantity: item.quantity + newItem.quantity } : item
         );
       }
-      // Если товара нет, добавляем
-      return [...prevCart, { ...newItem, quantity: 1 }];
+      return [...prevCart, newItem];
     });
+  };
+
+  // НОВАЯ ФУНКЦИЯ: Установка точного количества
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) {
+      setCart((prev) => prev.filter((item) => item.id !== id));
+      return;
+    }
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
   };
 
   const removeFromCart = (id: string) => {
@@ -69,13 +76,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartCount }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount }}>
       {children}
     </CartContext.Provider>
   );
 }
 
-// Хук для удобного использования корзины в компонентах
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
