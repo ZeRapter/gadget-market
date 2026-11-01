@@ -10,11 +10,9 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
   const [loadingId, setLoadingId] = useState<string | null>(null);
   
   const [searchQuery, setSearchQuery] = useState("");
-  // Инициализируем фильтр статуса из URL (если перешли с дашборда)
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "");
   const [filterDelivery, setFilterDelivery] = useState("");
 
-  // Синхронизация фильтра с URL при изменении URL
   useEffect(() => {
     setFilterStatus(searchParams.get("status") || "");
   }, [searchParams]);
@@ -64,7 +62,8 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
     const matchesSearch = query === "" || 
       clientName.toLowerCase().includes(query) || 
       clientPhone.includes(query) || 
-      productNames.toLowerCase().includes(query);
+      productNames.toLowerCase().includes(query) ||
+      (order.orderNumber && order.orderNumber.toString().includes(query));
 
     const matchesStatus = filterStatus === "" || order.status === filterStatus;
     const matchesDelivery = filterDelivery === "" || order.deliveryService === filterDelivery;
@@ -108,7 +107,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
           <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={18} />
           <input 
             type="text" 
-            placeholder="Поиск по клиенту или товару..." 
+            placeholder="Поиск по номеру, клиенту или товару..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 dark:text-white text-sm"
@@ -120,6 +119,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="p-4 w-16">№</th>
               <th className="p-4 w-1/4">Товары</th>
               <th className="p-4">Клиент и Доставка</th>
               <th className="p-4">Статус</th>
@@ -128,7 +128,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
             {filteredOrders.length === 0 ? (
-              <tr><td colSpan={4} className="p-8 text-center text-gray-500 dark:text-gray-400">Ничего не найдено</td></tr>
+              <tr><td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">Ничего не найдено</td></tr>
             ) : (
               filteredOrders.map((order) => {
                 const clientPhone = order.guestPhone || order.user?.phone;
@@ -136,6 +136,11 @@ export default function OrdersClient({ initialOrders }: { initialOrders: any[] }
 
                 return (
                   <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="p-4 align-top">
+                      <span className="font-mono font-bold text-blue-500 text-sm">
+                        {order.orderNumber ? `№${order.orderNumber}` : "—"}
+                      </span>
+                    </td>
                     <td className="p-4">
                       <div className="flex flex-col gap-2">
                         {order.items.map((item: any) => (

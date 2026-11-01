@@ -5,7 +5,7 @@ import { useFavorites } from "@/context/FavoritesContext";
 import { useCart } from "@/context/CartContext";
 import BookingModal from "./BookingModal";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Добавили роутер
+import { useRouter } from "next/navigation";
 
 interface ProductActionsProps {
   product: {
@@ -23,7 +23,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   const { addToCart } = useCart();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [qty, setQty] = useState(1); 
-  const router = useRouter(); // Инициализация роутера
+  const router = useRouter();
 
   const isFav = isFavorite(product.id);
 
@@ -38,9 +38,9 @@ export default function ProductActions({ product }: ProductActionsProps) {
     });
     
     if (redirectToCheckout) {
-      router.push("/checkout"); // Перекидываем на оформление
+      router.push("/checkout");
     } else {
-      alert(`Товар (${qty} шт.) добавлен в корзину!`);
+      // ALERT УБРАН. Просто сбрасываем счетчик.
       setQty(1); 
     }
   };
@@ -48,7 +48,6 @@ export default function ProductActions({ product }: ProductActionsProps) {
   return (
     <div className="flex flex-col gap-4 mt-6">
       
-      {/* Ряд: Избранное + Регулятор количества + В корзину */}
       <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full">
         <button
           onClick={() => toggleFavorite(product.id)}
@@ -80,7 +79,6 @@ export default function ProductActions({ product }: ProductActionsProps) {
         </button>
       </div>
 
-      {/* ВОЗВРАЩЕННАЯ КНОПКА ДОСТАВКИ */}
       <button
         onClick={() => handleAddToCart(true)}
         className="w-full py-4 px-6 rounded-xl font-bold text-lg bg-blue-600 text-white hover:bg-blue-700 neon-hover shadow-lg flex items-center justify-center gap-2"
@@ -89,7 +87,6 @@ export default function ProductActions({ product }: ProductActionsProps) {
       </button>
       <p className="text-xs text-center text-gray-500 dark:text-gray-400 -mt-2 mb-2">* Только для клиентов из других городов (СДЭК, Почта и др.)</p>
 
-      {/* Кнопка брони */}
       <button
         onClick={() => setIsBookingOpen(true)}
         className="w-full py-4 px-6 rounded-xl font-bold text-lg border-2 border-blue-500 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"

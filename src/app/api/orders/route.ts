@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { sendTelegramNotification } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   try {
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
         status: "PENDING",
         guestName: session ? null : guestName,
         guestPhone: guestPhone || null, 
-        guestEmail: guestEmail || null, // Сохраняем почту
+        guestEmail: guestEmail || null,
         contactMethod: contactMethod,
         contactValue: finalContactValue || null,
         items: {
@@ -45,7 +46,28 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, orderId: order.id });
+    try {
+      const clientName = session?.user?.name || guestName || "Гость";
+      const itemsList = items.map((item: any) => `• ${item.name || "Товар"} — ${item.quantity} шт.`).join("\n");
+      const totalSum = items.reduce((sum: number, item: any) => sum + (item.priceCash * item.quantity), 0);
+
+      // Изменили # на №
+      await sendTelegramNotification(
+        `📦 <b>Новый заказ №${order.orderNumber}!</b>\n\n` +
+        `👤 <b>Клиент:</b> ${clientName}\n` +
+        `📞 <b>Телефон:</b> ${guestPhone || "Не указан"}\n` +
+        `🚚 <b>Доставка:</b> ${deliveryService}\n` +
+        `📍 <b>Адрес:</b> ${address || "Не указан"}\n` +
+        `💬 <b>Связь:</b> ${contactMethod.toUpperCase()}: ${finalContactValue || "—"}\n\n` +
+        `🛒 <b>Товары:</b>\n${itemsList}\n\n` +
+        `💰 <b>Итого (нал.):</b> ${(totalSum / 100).toLocaleString('ru-RU')} ₽\n` +
+        `📝 <b>Комментарий:</b> ${comment || "—"}`
+      );
+    } catch (tgError) {
+      console.error("Ошибка отправки уведомления в Telegram (заказ создан):", tgError);
+    }
+
+    return NextResponse.json({ success: true, orderId: order.id, orderNumber: order.orderNumber });
   } catch (error) {
     console.error("Ошибка создания заказа:", error);
     return NextResponse.json({ error: "Ошибка сервера при создании заказа" }, { status: 500 });

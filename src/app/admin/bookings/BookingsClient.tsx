@@ -10,11 +10,9 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
   const [loadingId, setLoadingId] = useState<string | null>(null);
   
   const [searchQuery, setSearchQuery] = useState("");
-  // Инициализируем фильтр статуса из URL
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "");
   const [filterBranch, setFilterBranch] = useState("");
 
-  // Синхронизация с URL
   useEffect(() => {
     setFilterStatus(searchParams.get("status") || "");
   }, [searchParams]);
@@ -64,7 +62,8 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
     const matchesSearch = query === "" || 
       clientName.toLowerCase().includes(query) || 
       clientPhone.includes(query) || 
-      productNames.toLowerCase().includes(query);
+      productNames.toLowerCase().includes(query) ||
+      (booking.bookingNumber && booking.bookingNumber.toString().includes(query));
 
     const matchesStatus = filterStatus === "" || booking.status === filterStatus;
     const matchesBranch = filterBranch === "" || booking.branch === filterBranch;
@@ -106,7 +105,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
           <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={18} />
           <input 
             type="text" 
-            placeholder="Поиск по клиенту или товару..." 
+            placeholder="Поиск по номеру, клиенту или товару..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 dark:text-white text-sm"
@@ -118,6 +117,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="p-4 w-16">№</th>
               <th className="p-4 w-1/3">Товары в брони</th>
               <th className="p-4">Клиент и связь</th>
               <th className="p-4">Филиал / Статус</th>
@@ -126,7 +126,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
             {filteredBookings.length === 0 ? (
-              <tr><td colSpan={4} className="p-8 text-center text-gray-500 dark:text-gray-400">Ничего не найдено</td></tr>
+              <tr><td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">Ничего не найдено</td></tr>
             ) : (
               filteredBookings.map((booking) => {
                 const clientPhone = booking.guestPhone || booking.user?.phone;
@@ -134,6 +134,11 @@ export default function BookingsClient({ initialBookings }: { initialBookings: a
 
                 return (
                   <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="p-4 align-top">
+                      <span className="font-mono font-bold text-blue-500 text-sm">
+                        {booking.bookingNumber ? `№${booking.bookingNumber}` : "—"}
+                      </span>
+                    </td>
                     <td className="p-4">
                       <div className="flex flex-col gap-3">
                         {booking.items.map((item: any) => (

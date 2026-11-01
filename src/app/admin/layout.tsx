@@ -13,9 +13,10 @@ import {
   Gamepad2, 
   MonitorSmartphone, 
   Wrench, 
+  Search, 
   Users, 
   ArrowLeft,
-  Search 
+  Library
 } from "lucide-react";
 
 async function AdminAuth({ children }: { children: React.ReactNode }) {
@@ -47,6 +48,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin/promocodes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Tag size={20} /> Промокоды
         </Link>
+        
+        <Link href="/admin/attributes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
+          <Library size={20} /> Справочники
+        </Link>
 
         <div className="my-2 border-t border-gray-200 dark:border-slate-800"></div>
 
@@ -71,7 +76,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Wrench size={20} /> Прайс на ремонт
         </Link>
 
-        {/* ИСПРАВЛЕНО: правильный путь и правильное название */}
         <Link href="/admin/custom-requests" className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
           <Search size={20} /> Заказы товаров
         </Link>

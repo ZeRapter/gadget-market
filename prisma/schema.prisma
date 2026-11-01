@@ -50,6 +50,10 @@ model Category {
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
   products    Product[]
+  
+  // НОВАЯ СВЯЗЬ МНОГИЕ-КО-МНОГИМ
+  attributeTypes AttributeType[] @relation("CategoryAttributeTypes")
+  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -241,7 +245,7 @@ model Review {
   product   Product  @relation(fields: [productId], references: [id])
   rating    Int
   text      String?
-  images    String[] // <--- ДОБАВЛЕНО ПОЛЕ ДЛЯ ФОТОГРАФИЙ
+  images    String[]
   createdAt DateTime @default(now())
 }
 
@@ -279,4 +283,24 @@ model SubscriptionPlan {
   accountType String? 
   price       Int
   sortOrder   Int    @default(0)
+}
+
+// 14. Справочник типов (Модель, Жанр, Цвет)
+model AttributeType {
+  id          String           @id @default(cuid())
+  name        String           @unique 
+  categories  Category[]       @relation("CategoryAttributeTypes") 
+  values      AttributeValue[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// 15. Значения справочника
+model AttributeValue {
+  id              String        @id @default(cuid())
+  value           String        
+  attributeTypeId String
+  attributeType   AttributeType @relation(fields: [attributeTypeId], references: [id], onDelete: Cascade)
+  sortOrder       Int           @default(0) 
+  createdAt       DateTime      @default(now())
 }

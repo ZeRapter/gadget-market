@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { sendTelegramNotification } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   try {
@@ -22,13 +23,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Укажите ваше имя и телефон" }, { status: 400 });
     }
 
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-    });
-
-    if (!product) {
-      return NextResponse.json({ error: "Товар не найден" }, { status: 404 });
-    }
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) return NextResponse.json({ error: "Товар не найден" }, { status: 404 });
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + product.maxBookingHours);
@@ -48,18 +44,27 @@ export async function POST(req: Request) {
         contactMethod: contactMethod,
         contactValue: finalContactValue || null,
         items: {
-          create: [
-            {
-              productId: productId,
-              quantity: 1,
-            }
-          ]
+          create: [{ productId: productId, quantity: 1 }]
         }
       },
     });
 
-    // ВОЗВРАЩАЕМ КОД КЛИЕНТУ
-    return NextResponse.json({ success: true, bookingId: booking.id, pickupCode: booking.pickupCode });
+    const clientName = session?.user?.name || guestName || "Гость";
+    const branchName = branch === "ANGARSK" ? "Ангарск" : "Иркутск";
+    
+    // Изменили # на №
+    await sendTelegramNotification(
+      `🛒 <b>Новая бронь №${booking.bookingNumber}!</b>\n\n` +
+      `📦 <b>Товар:</b> ${product.name}\n` +
+      `👤 <b>Клиент:</b> ${clientName}\n` +
+      `📞 <b>Телефон:</b> ${guestPhone || "Не указан"}\n` +
+      `🏢 <b>Филиал:</b> ${branchName}\n` +
+      `💬 <b>Связь:</b> ${contactMethod.toUpperCase()}: ${finalContactValue || "—"}\n` +
+      `🔑 <b>Код выдачи:</b> <code>${pickupCode}</code>\n` +
+      `📝 <b>Комментарий:</b> ${comment || "—"}`
+    );
+
+    return NextResponse.json({ success: true, bookingId: booking.id, bookingNumber: booking.bookingNumber, pickupCode: booking.pickupCode });
   } catch (error) {
     console.error("Ошибка создания брони:", error);
     return NextResponse.json({ error: "Ошибка сервера при создании брони" }, { status: 500 });

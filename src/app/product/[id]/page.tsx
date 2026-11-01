@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProductActions from "@/components/ProductActions";
-import ReviewsSection from "@/components/ReviewsSection"; // <-- ДОБАВЛЕН ИМПОРТ
-import { ArrowLeft, ShieldCheck, Box, CreditCard } from "lucide-react";
+import FavoriteButton from "@/components/FavoriteButton";
+import ProductSpecs from "@/components/ProductSpecs";
+import ReviewsSection from "@/components/ReviewsSection";
+import { ArrowLeft, ShieldCheck, Box, CreditCard, Medal } from "lucide-react"; // <-- ИМПОРТ MEDAL
 
 async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: string }> }) {
   const { id } = await paramsPromise;
@@ -19,10 +21,11 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
 
   const isAvailable = ["BOTH", "ANGARSK", "IRKUTSK"].includes(product.availability);
   const imageUrl = product.images?.[0];
+  const specs = product.specs as Record<string, string> | null;
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
         <Link href="/catalog" className="hover:text-blue-500 flex items-center gap-1 transition-colors">
           <ArrowLeft size={16} /> В каталог
         </Link>
@@ -49,9 +52,12 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
             {product.category?.name || "Товар"}
           </div>
           
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            {product.name}
-          </h1>
+          <div className="flex justify-between items-start gap-4 mb-4">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+              {product.name}
+            </h1>
+            <FavoriteButton productId={product.id} />
+          </div>
           
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Артикул: {product.sku}</p>
 
@@ -86,6 +92,8 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
 
           <ProductActions product={product} />
 
+          {specs && <ProductSpecs specs={specs} />}
+
           {product.description && (
             <div className="mt-10">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Описание</h2>
@@ -95,16 +103,29 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
             </div>
           )}
 
-          <div className="mt-8 grid grid-cols-2 gap-4">
-            <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
-              <ShieldCheck className="text-blue-500" size={24} />
+          {/* СЕТКА ИЗ 3-х БЛОКОВ (Состояние, Гарантия, Бронь) */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="glass-panel rounded-xl p-4 flex flex-col items-center text-center sm:items-start sm:text-left sm:flex-row sm:gap-3">
+              <ShieldCheck className="text-blue-500 mb-2 sm:mb-0" size={24} />
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Состояние</p>
                 <p className="font-medium text-sm dark:text-white">{product.condition}</p>
               </div>
             </div>
-            <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
-              <Box className="text-blue-500" size={24} />
+            
+            {/* ВЫВОД ГАРАНТИИ */}
+            {product.warranty && (
+              <div className="glass-panel rounded-xl p-4 flex flex-col items-center text-center sm:items-start sm:text-left sm:flex-row sm:gap-3">
+                <Medal className="text-green-500 mb-2 sm:mb-0" size={24} />
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Гарантия</p>
+                  <p className="font-medium text-sm dark:text-white">{product.warranty}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="glass-panel rounded-xl p-4 flex flex-col items-center text-center sm:items-start sm:text-left sm:flex-row sm:gap-3">
+              <Box className="text-blue-500 mb-2 sm:mb-0" size={24} />
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Бронь до</p>
                 <p className="font-medium text-sm dark:text-white">{product.maxBookingHours} часов</p>
@@ -115,9 +136,7 @@ async function ProductDetails({ paramsPromise }: { paramsPromise: Promise<{ id: 
         </div>
       </div>
 
-      {/* БЛОК ОТЗЫВОВ (ДОБАВЛЕН В САМЫЙ НИЗ) */}
       <ReviewsSection productId={product.id} />
-
     </div>
   );
 }

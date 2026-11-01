@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ImagePlus, ArrowLeft, ChevronDown, ChevronRight, Folder, Check, UploadCloud, Loader2, X } from "lucide-react";
+import { Save, ImagePlus, ArrowLeft, ChevronDown, ChevronRight, Folder, Check, UploadCloud, Loader2, X, SlidersHorizontal, Info, Medal } from "lucide-react";
 import Link from "next/link";
 
 interface ProductFormProps {
@@ -11,7 +11,6 @@ interface ProductFormProps {
   initialCategoryId?: string;
 }
 
-// --- Компонент выбора категории (Оставляем без изменений) ---
 function CategorySelector({ categories, value, onChange }: { categories: any[], value: string, onChange: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -87,19 +86,18 @@ function CategorySelector({ categories, value, onChange }: { categories: any[], 
         <ChevronDown size={18} className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl max-h-64 overflow-y-auto p-2">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl max-h-64 overflow-y-auto p-2 custom-scrollbar">
           {renderTree(null)}
         </div>
       )}
     </div>
   );
 }
-// --------------------------------------------------------
 
 export default function ProductForm({ categories, initialData, initialCategoryId }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false); // Состояние загрузки фото
+  const [isUploading, setIsUploading] = useState(false); 
   
   const [name, setName] = useState(initialData?.name || "");
   const [sku, setSku] = useState(initialData?.sku || "");
@@ -107,40 +105,76 @@ export default function ProductForm({ categories, initialData, initialCategoryId
   const [priceCash, setPriceCash] = useState(initialData ? (initialData.priceCash / 100).toString() : "");
   const [priceCard, setPriceCard] = useState(initialData ? (initialData.priceCard / 100).toString() : "");
   const [condition, setCondition] = useState(initialData?.condition || "Новый");
+  const [warranty, setWarranty] = useState(initialData?.warranty || ""); // <-- СТЕЙТ ГАРАНТИИ
   const [availability, setAvailability] = useState(initialData?.availability || "BOTH");
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || initialCategoryId || categories[0]?.id || "");
   const [maxBookingHours, setMaxBookingHours] = useState(initialData?.maxBookingHours?.toString() || "24");
   
-  // Стейт для картинки (ссылка или загруженный файл)
   const [imageUrl, setImageUrl] = useState(initialData?.images?.[0] || "");
 
-  // Функция загрузки файла в Cloud.ru
+  const [allAttributes, setAllAttributes] = useState<any[]>([]);
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>(initialData?.specs || {});
+  const [regionModalTarget, setRegionModalTarget] = useState<"PS4" | "PS5" | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/attributes")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setAllAttributes(data);
+      })
+      .catch(console.error);
+  }, []);
+
+  const getApplicableAttributes = () => {
+    if (!categoryId) return [];
+    const getCategoryWithParents = (catId: string): string[] => {
+      const ids = [catId];
+      let current = categories.find(c => c.id === catId);
+      while (current && current.parentId) {
+        ids.push(current.parentId);
+        current = categories.find(c => c.id === current.parentId);
+      }
+      return ids;
+    };
+    const validCategoryIds = getCategoryWithParents(categoryId);
+    return allAttributes.filter(attr => {
+      if (!attr.categories || attr.categories.length === 0) return true;
+      return attr.categories.some((c: any) => validCategoryIds.includes(c.id));
+    });
+  };
+
+  const applicableAttributes = getApplicableAttributes();
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsUploading(true);
     const formData = new FormData();
     formData.append("file", file);
-
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (res.ok) {
         const data = await res.json();
-        setImageUrl(data.url); // Сохраняем полученную ссылку в стейт
-      } else {
-        alert("Ошибка при загрузке изображения");
-      }
+        setImageUrl(data.url);
+      } else { alert("Ошибка при загрузке изображения"); }
     } catch (error) {
       console.error(error);
       alert("Ошибка сети при загрузке фото");
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleSpecChange = (attributeName: string, value: string) => {
+    setSelectedSpecs(prev => ({ ...prev, [attributeName]: value }));
+  };
+
+  const handleSpecPartChange = (attrName: string, prefix: string, number: string) => {
+    let combined = number;
+    if (prefix) {
+      combined = number ? `${prefix}-${number}` : prefix;
+    }
+    handleSpecChange(attrName, combined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,9 +192,10 @@ export default function ProductForm({ categories, initialData, initialCategoryId
           name, sku, description,
           priceCash: Number(priceCash) * 100,
           priceCard: Number(priceCard) * 100,
-          condition, availability, categoryId,
+          condition, warranty, availability, categoryId, // <-- ПЕРЕДАЕМ WARRANTY
           maxBookingHours: Number(maxBookingHours),
-          images: imageUrl ? [imageUrl] : [], // Отправляем массив с одной ссылкой
+          images: imageUrl ? [imageUrl] : [],
+          specs: Object.keys(selectedSpecs).length > 0 ? selectedSpecs : null,
         }),
       });
 
@@ -226,6 +261,13 @@ export default function ProductForm({ categories, initialData, initialCategoryId
           </select>
         </div>
         <div>
+          <label className="block text-sm font-medium mb-2 dark:text-gray-300">Гарантия</label>
+          <input type="text" value={warranty} onChange={e => setWarranty(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-transparent dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Например: 12 месяцев" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
           <label className="block text-sm font-medium mb-2 dark:text-gray-300">Наличие</label>
           <select value={availability} onChange={e => setAvailability(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-transparent dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
             <option value="BOTH" className="dark:bg-slate-800">В обоих филиалах</option>
@@ -235,54 +277,126 @@ export default function ProductForm({ categories, initialData, initialCategoryId
             <option value="OUT_OF_STOCK" className="dark:bg-slate-800">Нет в наличии</option>
           </select>
         </div>
-      </div>
-
-      {/* БЛОК ЗАГРУЗКИ ФОТО */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium mb-2 dark:text-gray-300">Фотография товара</label>
-          
-          {imageUrl ? (
-            // Если фото есть, показываем превью и кнопку удаления
-            <div className="relative w-full h-40 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden group">
-              <img src={imageUrl} alt="Превью" className="w-full h-full object-cover" />
-              <button 
-                type="button" 
-                onClick={() => setImageUrl("")} 
-                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Удалить фото"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          ) : (
-            // Если фото нет, показываем кнопку загрузки
-            <div className="relative w-full h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-slate-700 flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
-              {isUploading ? (
-                <>
-                  <Loader2 className="animate-spin text-blue-500 mb-2" size={24} />
-                  <span className="text-sm text-gray-500">Загрузка в Cloud.ru...</span>
-                </>
-              ) : (
-                <>
-                  <UploadCloud className="text-gray-400 mb-2" size={24} />
-                  <span className="text-sm text-gray-500 font-medium">Нажмите, чтобы загрузить</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleFileUpload} 
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                  />
-                </>
-              )}
-            </div>
-          )}
-        </div>
-        
         <div>
           <label className="block text-sm font-medium mb-2 dark:text-gray-300">Макс. срок брони (часов)</label>
           <input type="number" value={maxBookingHours} onChange={e => setMaxBookingHours(e.target.value)} className="w-full p-3 rounded-xl border dark:border-slate-700 bg-transparent dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
         </div>
+      </div>
+
+      {/* БЛОК ДИНАМИЧЕСКИХ ХАРАКТЕРИСТИК */}
+      {applicableAttributes.length > 0 && (
+        <div className="pt-6 border-t border-gray-200 dark:border-slate-800">
+          <h3 className="text-lg font-bold dark:text-white mb-4 flex items-center gap-2">
+            <SlidersHorizontal size={20} className="text-blue-500" /> Характеристики
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-gray-50 dark:bg-slate-800/30 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
+            {applicableAttributes.map(attr => {
+              const isDiscRegion = attr.name.includes("Регион") || attr.name.includes("диск");
+              const isConsoleSerial = attr.name.includes("Код") || attr.name.includes("Ревизия");
+              
+              let currentPrefix = "";
+              let currentNumber = selectedSpecs[attr.name] || "";
+              
+              if (isDiscRegion && currentNumber) {
+                const foundPrefix = attr.values.find((v: any) => currentNumber.startsWith(v.value));
+                if (foundPrefix) {
+                  currentPrefix = foundPrefix.value;
+                  currentNumber = currentNumber.replace(foundPrefix.value, "").replace(/^-/, "");
+                }
+              }
+
+              return (
+                <div key={attr.id}>
+                  <label className="block text-sm font-medium mb-2 dark:text-gray-300 flex items-center gap-1">
+                    {attr.name}
+                    {isConsoleSerial && (
+                      <button 
+                        type="button" 
+                        onClick={() => setRegionModalTarget(attr.name.includes("PS4") || attr.name.includes("PlayStation 4") ? "PS4" : "PS5")} 
+                        className="text-blue-500 hover:text-blue-600 transition-colors"
+                        title="Расшифровка кодов"
+                      >
+                        <Info size={14} />
+                      </button>
+                    )}
+                  </label>
+                  
+                  {isDiscRegion ? (
+                    <div className="flex gap-2">
+                      <select 
+                        value={currentPrefix} 
+                        onChange={e => handleSpecPartChange(attr.name, e.target.value, currentNumber)}
+                        className="w-1/3 p-3 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      >
+                        <option value="">Без префикса</option>
+                        {attr.values.map((val: any) => (
+                          <option key={val.id} value={val.value} className="dark:bg-slate-800">{val.value}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        placeholder="Цифры (напр. 00010)"
+                        value={currentNumber}
+                        onChange={e => handleSpecPartChange(attr.name, currentPrefix, e.target.value)}
+                        className="w-2/3 p-3 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        list={`spec-list-${attr.id}`}
+                        value={selectedSpecs[attr.name] || ""}
+                        onChange={e => handleSpecChange(attr.name, e.target.value)}
+                        placeholder={isConsoleSerial ? "Введите код (напр. CUH-1008A)" : "Выберите или введите..."}
+                        className="w-full p-3 rounded-xl border dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <datalist id={`spec-list-${attr.id}`}>
+                        {attr.values.map((val: any) => (
+                          <option key={val.id} value={val.value} />
+                        ))}
+                      </datalist>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* БЛОК ЗАГРУЗКИ ФОТО */}
+      <div className="pt-6 border-t border-gray-200 dark:border-slate-800">
+        <label className="block text-sm font-medium mb-2 dark:text-gray-300">Фотография товара</label>
+        
+        {imageUrl ? (
+          <div className="relative w-full max-w-xs h-40 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden group">
+            <img src={imageUrl} alt="Превью" className="w-full h-full object-cover" />
+            <button 
+              type="button" 
+              onClick={() => setImageUrl("")} 
+              className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Удалить фото"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <div className="relative w-full max-w-xs h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-slate-700 flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+            {isUploading ? (
+              <>
+                <Loader2 className="animate-spin text-blue-500 mb-2" size={24} />
+                <span className="text-sm text-gray-500">Загрузка в Cloud.ru...</span>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="text-gray-400 mb-2" size={24} />
+                <span className="text-sm text-gray-500 font-medium">Нажмите, чтобы загрузить</span>
+                <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t border-gray-200 dark:border-slate-800 flex justify-between items-center">
@@ -294,6 +408,90 @@ export default function ProductForm({ categories, initialData, initialCategoryId
           {loading ? "Сохранение..." : (initialData ? "Обновить товар" : "Сохранить товар")}
         </button>
       </div>
+
+      {/* МОДАЛКА С РЕГИОНАМИ (Оставил как в ProductSpecs) */}
+      {regionModalTarget && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 shrink-0">
+              <h3 className="font-bold text-lg dark:text-white">Расшифровка кодов</h3>
+              <button onClick={() => setRegionModalTarget(null)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              {regionModalTarget === "PS4" && (
+                <div>
+                  <h4 className="font-bold text-blue-500 text-lg mb-4">PlayStation 4 (CUH-xxxx)</h4>
+                  <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Пример: <b>CUH-1008A</b></p>
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">CUH</span> — Платформа</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">100</span> — Модель (Fat/Slim/Pro)</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">8</span> — Регион</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">A</span> — Память (500 ГБ)</div>
+                    </div>
+                  </div>
+                  <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Регионы:</h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
+                    <div><span className="font-bold text-blue-500">0</span> — Япония</div>
+                    <div><span className="font-bold text-blue-500">1 / 5</span> — США / Канада</div>
+                    <div><span className="font-bold text-blue-500">2</span> — Австралия</div>
+                    <div><span className="font-bold text-blue-500">3</span> — Великобритания</div>
+                    <div><span className="font-bold text-blue-500">4 / 6</span> — Европа</div>
+                    <div><span className="font-bold text-blue-500">5</span> — Ю. Корея</div>
+                    <div><span className="font-bold text-blue-500">6</span> — Азия</div>
+                    <div><span className="font-bold text-blue-500">7</span> — Тайвань</div>
+                    <div><span className="font-bold text-blue-500">8</span> — Россия / СНГ</div>
+                    <div><span className="font-bold text-red-500">9</span> — <span className="text-red-500">Китай</span></div>
+                    <div><span className="font-bold text-blue-500">10</span> — Лат. Америка</div>
+                    <div><span className="font-bold text-blue-500">11</span> — Гонконг</div>
+                  </div>
+                  <div className="mt-4 p-3 bg-gray-100 dark:bg-slate-700 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                    <b>Буква в конце:</b> <span className="font-bold text-blue-500">A</span> — 500 ГБ, <span className="font-bold text-blue-500">B</span> — 1 ТБ.
+                  </div>
+                </div>
+              )}
+
+              {regionModalTarget === "PS5" && (
+                <div>
+                  <h4 className="font-bold text-blue-500 text-lg mb-4">PlayStation 5 (CFI-xxxx)</h4>
+                  <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">Пример: <b>CFI-1016A</b></p>
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">CFI</span> — Платформа</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">101</span> — Ревизия</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">6</span> — Регион</div>
+                      <div><span className="font-mono text-blue-600 dark:text-blue-400 font-bold">A</span> — Дисковод</div>
+                    </div>
+                  </div>
+                  <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Регионы:</h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
+                    <div><span className="font-bold text-blue-500">0</span> — Япония</div>
+                    <div><span className="font-bold text-blue-500">2</span> — Австралия</div>
+                    <div><span className="font-bold text-blue-500">8</span> — Россия / СНГ</div>
+                    <div><span className="font-bold text-red-500">9</span> — <span className="text-red-500">Китай</span></div>
+                    <div><span className="font-bold text-blue-500">14</span> — Лат. Америка</div>
+                    <div><span className="font-bold text-blue-500">15</span> — США / Канада</div>
+                    <div><span className="font-bold text-blue-500">16</span> — Европа</div>
+                    <div><span className="font-bold text-blue-500">18</span> — Азия</div>
+                  </div>
+                  <div className="mt-4 p-3 bg-gray-100 dark:bg-slate-700 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                    <b>Буква в конце:</b> <span className="font-bold text-blue-500">A</span> — с дисководом, <span className="font-bold text-blue-500">B</span> — Digital (без дисковода).
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-right shrink-0">
+              <button onClick={() => setRegionModalTarget(null)} className="px-6 py-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">
+                Понятно
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

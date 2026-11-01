@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-// УДАЛЕНИЕ
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -22,7 +21,6 @@ export async function DELETE(
   }
 }
 
-// ОБНОВЛЕНИЕ (РЕДАКТИРОВАНИЕ)
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -36,6 +34,42 @@ export async function PUT(
     const { id } = await params;
     const data = await req.json();
 
+    // УМНАЯ ЛОГИКА (Такая же, как при создании)
+    if (data.specs && data.specs["Ревизия"]) {
+      const revValue = data.specs["Ревизия"].trim();
+      if (revValue) {
+        try {
+          let attrType = await prisma.attributeType.findUnique({ where: { name: "Ревизия" } });
+          
+          if (!attrType) {
+            attrType = await prisma.attributeType.create({
+              data: { 
+                name: "Ревизия", 
+                categories: { connect: [{ id: data.categoryId }] } 
+              }
+            });
+          } else {
+            await prisma.attributeType.update({
+              where: { id: attrType.id },
+              data: { categories: { connect: [{ id: data.categoryId }] } }
+            });
+          }
+
+          const existingVal = await prisma.attributeValue.findFirst({
+            where: { attributeTypeId: attrType.id, value: revValue }
+          });
+
+          if (!existingVal) {
+            await prisma.attributeValue.create({
+              data: { attributeTypeId: attrType.id, value: revValue }
+            });
+          }
+        } catch (e) {
+          console.error("Ошибка при обновлении справочника ревизий:", e);
+        }
+      }
+    }
+
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
@@ -45,10 +79,12 @@ export async function PUT(
         priceCash: data.priceCash,
         priceCard: data.priceCard,
         condition: data.condition,
+        warranty: data.warranty, // <-- ДОБАВЛЕНО
         availability: data.availability,
         categoryId: data.categoryId,
         maxBookingHours: data.maxBookingHours,
         images: data.images,
+        specs: data.specs,
       },
     });
 
